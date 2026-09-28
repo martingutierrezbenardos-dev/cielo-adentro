@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="es-CL">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Aventura gráfica educativa de filosofía de la ciencia para 3° y 4° medio.">
+  <title>Cielo Adentro</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0f2c'/%3E%3Cpath d='M4 26 A12 12 0 0 1 28 26Z' fill='%23d9d4e4'/%3E%3Ccircle cx='23' cy='8' r='2.5' fill='%23f2b84b'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+  <div id="app">
+    <header id="barra" class="barra" hidden>
+      <div class="barra-info">
+        <span id="barra-capitulo"></span>
+        <span id="barra-objetivo" aria-live="polite"></span>
+      </div>
+      <nav class="barra-botones" aria-label="Herramientas del juego">
+        <button type="button" class="boton" id="btn-cuaderno"><span aria-hidden="true">📓</span><span class="etq">Cuaderno</span> <span class="tecla" aria-hidden="true">C</span></button>
+        <button type="button" class="boton" id="btn-glosario"><span aria-hidden="true">🔤</span><span class="etq">Glosario</span> <span class="tecla" aria-hidden="true">G</span></button>
+        <button type="button" class="boton" id="btn-resaltar" aria-pressed="false"><span aria-hidden="true">✨</span><span class="etq">Resaltar zonas</span> <span class="tecla" aria-hidden="true">R</span></button>
+        <button type="button" class="boton" id="btn-ajustes" aria-label="Ajustes"><span aria-hidden="true">⚙️</span><span class="etq">Ajustes</span></button>
+        <button type="button" class="boton" id="btn-menu"><span aria-hidden="true">☰</span><span class="etq">Menú</span> <span class="tecla" aria-hidden="true">M</span></button>
+      </nav>
+    </header>
+
+    <main id="escenario-marco">
+      <div id="escenario" role="region" aria-label="Escena">
+        <div id="fondo"></div>
+        <div id="hotspots" role="group" aria-label="Zonas para explorar"></div>
+      </div>
+    </main>
+
+    <div id="inventario" class="inventario" role="region" aria-label="Inventario" hidden></div>
+  </div>
+
+  <div id="dialogo" class="dialogo" role="region" aria-label="Diálogo" aria-live="polite" hidden></div>
+  <div id="capa-modal"></div>
+  <div id="avisos" class="avisos" role="status" aria-live="polite"></div>
+  <div id="inicio"></div>
+
+  <noscript><p style="padding:2rem">Este juego necesita JavaScript activado.</p></noscript>
+
+  <!-- Datos editables (ver README) -->
+  <script src="datos/config.js"></script>
+  <script src="datos/cap0.js"></script>
+  <script src="datos/cap1.js"></script>
+  <script src="datos/cuaderno.js"></script>
+  <script src="datos/glosario.js"></script>
+  <script src="datos/evaluacion.js"></script>
+  <script src="datos/docente.js"></script>
+
+  <!-- Motor -->
+  <script src="js/motor/estado.js"></script>
+  <script src="js/motor/guardado.js"></script>
+  <script src="js/motor/condiciones.js"></script>
+  <script src="js/motor/escena.js"></script>
+  <script src="js/motor/dialogo.js"></script>
+  <script src="js/motor/inventario.js"></script>
+  <script src="js/motor/ui.js"></script>
+  <script src="js/motor/puzles.js"></script>
+  <script src="js/motor/evaluacion.js"></script>
+  <script src="js/motor/exportar.js"></script>
+  <script src="js/motor/docente.js"></script>
+
+  <!-- Arte -->
+  <script src="js/arte/base.js"></script>
+  <script src="js/arte/personajes.js"></script>
+  <script src="js/arte/objetos.js"></script>
+  <script src="js/arte/escenas-cap0.js"></script>
+  <script src="js/arte/escenas-cap1.js"></script>
+
+  <!-- Puzles -->
+  <script src="js/puzles/criba.js"></script>
+  <script src="js/puzles/clasificar.js"></script>
+  <script src="js/puzles/balanza.js"></script>
+
+  <script src="js/juego.js"></script>
+</body>
+</html>
