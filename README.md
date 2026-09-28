@@ -3,6 +3,8 @@
 Aventura gráfica educativa (*point and click*) de **filosofía de la ciencia** para 3° y 4° medio.
 Quien juega es estudiante en práctica en el Observatorio Alto Tamarugo (ficticio), en el desierto de Atacama, donde fenómenos extraños obligan al equipo a preguntarse cómo sabe la ciencia lo que sabe.
 
+**Jugar en línea:** https://martingutierrezbenardos-dev.github.io/cielo-adentro/
+
 > **Estado:** Capítulos 0 y 1 completos y probados. Capítulos 2–4 en desarrollo.
 
 ## Capítulos
