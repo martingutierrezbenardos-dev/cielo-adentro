@@ -35,10 +35,13 @@ DATOS.config = {
     objetivo: "Objetivo:",
     ejemplo: "Ejemplo:",
 
-    inventario: "Inventario:",
-    inventarioVacio: "(vacío)",
-    usarObjeto: "Elegiste «{objeto}». Ahora pulsa la zona donde quieres usarlo (Esc para cancelar).",
+    mochila: "Mochila",
+    mochilaTitulo: "Mochila",
+    mochilaVacia: "La mochila está vacía.",
+    mochilaAyuda: "Para usar un objeto, ponte frente a algo y elígelo aquí: se usará en lo que tienes enfrente.",
     noSirveAqui: "No parece útil usar «{objeto}» aquí.",
+    nadaEnfrente: "No hay nada enfrente donde usar «{objeto}». Acércate y mira hacia lo que quieres usar.",
+    noLlegas: "No encuentras cómo llegar hasta ahí.",
     objetoRecibido: "Recibiste: {objeto}",
 
     observacionRegistrada: "Observación registrada en tu cuaderno ({registros}/{n}).",
@@ -71,17 +74,19 @@ DATOS.config = {
 
     ayuda: "Ayuda y teclas",
     ayudaTitulo: "Cómo jugar",
-    ayudaIntro: "Explora cada escena pulsando sus zonas. No hay tiempo límite: los textos avanzan solo cuando tú decides. Si te atascas, mira el **Objetivo** en la barra superior o pide una **pista** dentro de cada puzle.",
+    ayudaIntro: "Camina por cada lugar y conversa con las personas. Ponte frente a algo o alguien y presiona **A** (Enter, Espacio o Z) para interactuar. Las puertas y caminos se cruzan caminando sobre ellos. También puedes hacer clic (o tocar) donde quieras ir. No hay tiempo límite: los textos avanzan solo cuando tú decides. Si te atascas, mira el **Objetivo** en la barra superior, presiona **R** para ver los lugares importantes o pide una **pista** en cada duelo.",
     ayudaTeclas: [
-      ["Tab / Mayús+Tab", "Moverse entre zonas y botones"],
-      ["Enter o Espacio", "Activar la zona o botón seleccionado"],
-      ["R", "Resaltar todas las zonas de la escena"],
-      ["C", "Abrir o cerrar el cuaderno de campo"],
-      ["G", "Abrir el glosario"],
-      ["I", "Ir al inventario"],
+      ["Flechas o W A S D", "Caminar (un toque corto solo gira)"],
+      ["Enter, Espacio o Z", "Botón A: hablar, mirar, avanzar el texto"],
+      ["Clic o toque", "Caminar hasta ese lugar e interactuar"],
+      ["Tab", "Recorrer la lista de lugares y personas (Enter para ir)"],
+      ["R", "Mostrar los lugares importantes (❗ nuevo, ➜ salida)"],
+      ["I", "Mochila (para usar un objeto, mira hacia algo y elígelo)"],
+      ["C", "Cuaderno de campo"],
+      ["G", "Glosario"],
       ["M", "Menú"],
-      ["1, 2, 3…", "Elegir una opción en los diálogos"],
-      ["Esc", "Cerrar ventanas o cancelar el uso de un objeto"],
+      ["1, 2, 3…", "Elegir una opción en diálogos y duelos"],
+      ["Esc", "Cerrar ventanas o salir de un duelo (se guarda el avance)"],
       ["?", "Esta ayuda"]
     ],
 
@@ -145,7 +150,16 @@ DATOS.config = {
     docenteProgresoIntro: "Progreso de la partida abierta en este navegador.",
     docenteCompletado: "Completado",
     docentePistas: "Pistas usadas",
-    clasificados: "Clasificados: {n} de {total}."
+    clasificados: "Clasificados: {n} de {total}.",
+
+    // Duelos (combates filosóficos)
+    dueloPregunta: "Tu respuesta",
+    dueloEficaz: "¡Es muy eficaz!",
+    dueloNoEficaz: "No es muy eficaz…",
+    dueloVictoria: "¡Ganaste el duelo!",
+    dueloMovimientos: "Movimientos",
+    dueloHuir: "Salir del duelo",
+    dueloRetomar: "Retomemos donde quedamos."
   }
 };
 

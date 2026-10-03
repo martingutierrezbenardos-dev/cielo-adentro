@@ -9,7 +9,8 @@
   function mostrarJuego(si) {
     enPartida = si;
     $("barra").hidden = !si;
-    $("inventario").hidden = !si;
+    $("controles").hidden = !si;
+    document.body.classList.toggle("en-partida", si);
     $("inicio").hidden = si;
     if (si) {
       CA.Escena.ajustarTamano();
@@ -23,6 +24,19 @@
     return (cap && cap.prefijo) || capId + "-";
   }
 
+  // Portada animada (las estrellas titilan) mientras la pantalla de inicio esté visible.
+  function dibujarPortada(lienzo) {
+    var ctx = lienzo.getContext("2d");
+    ctx.imageSmoothingEnabled = false;
+    var f = 0;
+    (function tic() {
+      if (!document.body.contains(lienzo) || $("inicio").hidden) return;
+      CA.Pixel.portada(ctx, f);
+      f = 1 - f;
+      if (!document.body.classList.contains("sin-animaciones")) setTimeout(tic, 900);
+    })();
+  }
+
   CA.Juego = {
     enPartida: function () { return enPartida; },
 
@@ -33,7 +47,8 @@
       var guardado = CA.Guardado.cargar();
       var el = $("inicio");
       el.className = "inicio";
-      el.innerHTML = '<div class="inicio-arte" aria-hidden="true">' + CA.Arte.escena("portada", CA.estado) + "</div>";
+      el.innerHTML = '<div class="inicio-arte" aria-hidden="true"><canvas width="240" height="160"></canvas></div>';
+      dibujarPortada(el.querySelector("canvas"));
       var panel = CA.UI.crear("div", "inicio-panel");
       var hayPartida = guardado && guardado.capitulo;
       var j = hayPartida ? guardado.jugador : CA.estado.jugador;

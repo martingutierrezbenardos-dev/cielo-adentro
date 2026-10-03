@@ -3,11 +3,13 @@
   "use strict";
 
   var tipos = {};
+  var opcionesTipo = {};
 
   function T() { return DATOS.config.textos; }
 
   CA.Puzles = {
-    registrar: function (tipo, fn) { tipos[tipo] = fn; },
+    // opciones.combate: el puzle se juega como duelo (pantalla de combate).
+    registrar: function (tipo, fn, opciones) { tipos[tipo] = fn; opcionesTipo[tipo] = opciones || {}; },
 
     completado: function (id) {
       return !!(CA.estado.puzles[id] && CA.estado.puzles[id].completado);
@@ -28,9 +30,13 @@
 
         var m = CA.UI.modal({
           titulo: cfg.titulo,
-          clase: "ancho",
+          clase: opcionesTipo[cfg.tipo].combate ? "modal-combate" : "ancho",
           alCerrar: function () { resolver(terminado); },
           construir: function (cuerpo, modal) {
+            if (opcionesTipo[cfg.tipo].combate) {
+              var bc = modal.acciones.lastElementChild;
+              if (bc) bc.innerHTML = T().dueloHuir + ' <span class="tecla" aria-hidden="true">Esc</span>';
+            }
             var zonaPistas = CA.UI.crear("div", "pistas");
             zonaPistas.setAttribute("aria-live", "polite");
             var zona = CA.UI.crear("div", null);

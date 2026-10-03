@@ -1,61 +1,54 @@
-/* Inventario: se selecciona un objeto y luego se pulsa una zona de la escena para usarlo. */
+/* Mochila: lista de objetos. Para usar uno, ponte frente a algo, abre la mochila (tecla I)
+   y elige el objeto: se usa en lo que tienes enfrente. */
 (function (CA) {
   "use strict";
 
-  var el;
-  var sel = null;
+  function T() { return DATOS.config.textos; }
 
   CA.Inventario = {
-    iniciar: function () { el = document.getElementById("inventario"); },
+    iniciar: function () {},
 
-    seleccionado: function () { return sel; },
+    // Compatibilidad con el motor anterior: ya no hay objeto "seleccionado".
+    seleccionado: function () { return null; },
+    deseleccionar: function () {},
 
-    deseleccionar: function () {
-      sel = null;
-      document.getElementById("escenario").classList.remove("usando");
-      CA.Inventario.render();
-    },
-
-    enfocar: function () {
-      var b = el && el.querySelector(".objeto");
-      if (b) b.focus();
-      else CA.UI.aviso(DATOS.config.textos.inventarioVacio);
-    },
-
+    // Actualiza el contador del botón de la mochila.
     render: function () {
-      if (!el) return;
-      if (sel && !CA.E.tiene(sel)) sel = null;
-      el.innerHTML = "";
-      var t = document.createElement("span");
-      t.className = "inventario-titulo";
-      t.textContent = DATOS.config.textos.inventario;
-      el.appendChild(t);
-      if (!CA.estado.inventario.length) {
-        var v = document.createElement("span");
-        v.className = "inventario-vacio";
-        v.textContent = DATOS.config.textos.inventarioVacio;
-        el.appendChild(v);
-        return;
-      }
-      CA.estado.inventario.forEach(function (id) {
-        var o = CA.Datos.objeto(id);
-        var b = document.createElement("button");
-        b.type = "button";
-        b.className = "objeto";
-        b.setAttribute("aria-pressed", sel === id ? "true" : "false");
-        b.title = o.descripcion || o.nombre;
-        b.innerHTML = CA.Arte.objeto(id) + "<span>" + o.nombre + "</span>";
-        b.addEventListener("click", function () {
-          if (sel === id) { CA.Inventario.deseleccionar(); return; }
-          sel = id;
-          document.getElementById("escenario").classList.add("usando");
-          CA.Inventario.render();
-          CA.UI.aviso(DATOS.config.textos.usarObjeto.replace("{objeto}", o.nombre));
-          var primero = document.querySelector("#hotspots .hotspot");
-          if (primero) primero.focus();
-        });
-        el.appendChild(b);
+      var b = document.getElementById("btn-mochila");
+      if (!b) return;
+      var n = CA.estado.inventario.length;
+      var c = b.querySelector(".cuenta");
+      if (c) c.textContent = n ? String(n) : "";
+    },
+
+    enfocar: function () { CA.Inventario.abrir(); },
+
+    abrir: function () {
+      var sup = CA.UI.modalSuperior();
+      if (sup && sup.tipo === "mochila") { sup.cerrar(); return; }
+      if (CA.Dialogo.abierto() || CA.Escena.ocupado()) return;
+      var m = CA.UI.modal({
+        titulo: T().mochilaTitulo,
+        construir: function (cuerpo, modal) {
+          if (!CA.estado.inventario.length) {
+            cuerpo.innerHTML = "<p>" + T().mochilaVacia + "</p>";
+            return;
+          }
+          cuerpo.appendChild(CA.UI.crear("p", "ayuda", T().mochilaAyuda));
+          var lista = CA.UI.crear("div", "opciones");
+          CA.estado.inventario.forEach(function (id) {
+            var o = CA.Datos.objeto(id);
+            var b = CA.UI.boton('<span class="cursor" aria-hidden="true">▶</span><strong>' + CA.UI.esc(o.nombre) + "</strong>" +
+              (o.descripcion ? '<span class="desc">' + CA.UI.esc(o.descripcion) + "</span>" : ""), "opcion objeto-mochila", function () {
+              modal.cerrar();
+              CA.Escena.usarObjeto(id);
+            });
+            lista.appendChild(b);
+          });
+          cuerpo.appendChild(lista);
+        }
       });
+      m.tipo = "mochila";
     }
   };
 })(window.CA);
