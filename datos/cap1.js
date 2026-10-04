@@ -2,10 +2,11 @@
    CAPÍTULO 1 — LA INDUCCIÓN
    ---------------------------------------------------------
    Cómo leer este archivo (ver README para más detalle):
-   - escenas: cada escena tiene "hotspots" (zonas clicables).
-     "zona": [x, y, ancho, alto] en % del escenario.
-     "si": condición para que la zona aparezca.
-     "acciones": lo que ocurre al pulsarla, en orden.
+   - escenas: cada escena tiene un "mapa" (baldosas) y "hotspots" (lugares y personas).
+     "en": [x, y] o [x, y, ancho, alto] en baldosas. "sprite": personaje que aparece ahí.
+     "pisar": true = se activa al caminar encima (puertas y salidas).
+     "si": condición para que el lugar aparezca.
+     "acciones": lo que ocurre al interactuar (botón A), en orden.
    - dialogos: listas de líneas {quien, texto, opciones}.
      En los textos: **negrita**, _cursiva_, {nombre} = nombre del estudiante,
      {registros} = observaciones registradas, {faltan} = observaciones que faltan.
@@ -90,32 +91,57 @@ DATOS.capitulos.cap1 = {
   cierre: "**Lo que descubriste:** ninguna cantidad finita de casos confirmatorios garantiza lógicamente la verdad de una generalización universal. Aun así, generalizar vale la pena: nos permite predecir, siempre que tratemos nuestras leyes como revisables.\n\n**Pregunta para el próximo capítulo:** si el pasado no garantiza el futuro, ¿por qué confiamos en que el futuro se parecerá al pasado?",
 
   /* ---------------------------------------------------------
-     ESCENAS
+     ESCENAS (mapas). Ver README: «Mapas y lugares».
      --------------------------------------------------------- */
   escenas: {
     "c1-exterior": {
       nombre: "Explanada del observatorio",
-      fondo: "c1-exterior",
+      mapa: {
+        modo: "noche",
+        tinte: [{ si: { bandera: "c1-noche" }, color: "#8c94d8" }, { color: "#c8cce8" }],
+        terreno: [
+          "aaaaaaaaaaaaaaaaaaaa",
+          "aaaaaaaaaaaaaaaaaaaa",
+          "bbbbbbbbbbbbbbbbbbbb",
+          "cccccccccccccccccccc",
+          "mmmmmmmmmmmmmmmmmmmm",
+          "____________________",
+          "..,......,..........",
+          ".....,.........,....",
+          "..........,.........",
+          "...,........,.......",
+          "...:::::::::::::....",
+          ".,....:.....,.......",
+          "......:..,.......,..",
+          "......:............."
+        ],
+        objetos: [
+          ["campo-salar", 13, 0], ["cupula", 2, 6], ["casa", 13, 7],
+          ["cactus", 0, 6], ["cactus", 9, 11], ["cactus", 18, 11], ["piedra", 11, 7], ["piedra", 3, 12]
+        ],
+        inicio: [6, 12, "arriba"],
+        desde: { "c1-cupula": [3, 10, "abajo"], "c1-gallinero": [14, 11, "abajo"] }
+      },
       alEntrar: [
         { si: { noBandera: "c1-llegada" }, entonces: [{ dialogo: "c1-llegada" }] },
         { si: { bandera: "c1-noche", noBandera: "c1-nova" }, entonces: [{ dialogo: "c1-nova-aparece" }] }
       ],
       hotspots: [
-        { id: "puerta", etiqueta: "Entrar a la cúpula", zona: [37, 69, 7.5, 16], salida: true,
+        { id: "puerta", etiqueta: "Entrar a la cúpula", en: [3, 9], pisar: true,
           acciones: [{ ir: "c1-cupula" }] },
-        { id: "casa", etiqueta: "Casa de Don Ramiro", zona: [71, 63, 27, 24],
+        { id: "casa", etiqueta: "Don Ramiro (su casa)", en: [15, 10], sprite: "ramiro",
           si: { noBandera: "c1-ley" },
           acciones: [{ dialogo: "c1-ramiro-1" }] },
-        { id: "casa", etiqueta: "Casa de Don Ramiro", zona: [71, 63, 27, 24],
+        { id: "casa", etiqueta: "Don Ramiro (su casa)", en: [15, 10], sprite: "ramiro",
           si: { bandera: "c1-ley", noBandera: "c1-gallina" },
           acciones: [{ dialogo: "c1-ramiro-invita" }, { ir: "c1-gallinero" }] },
-        { id: "casa", etiqueta: "Casa de Don Ramiro", zona: [71, 63, 27, 24],
+        { id: "casa", etiqueta: "Don Ramiro (su casa)", en: [15, 10], sprite: "ramiro",
           si: { bandera: "c1-gallina" },
           acciones: [{ dialogo: "c1-ramiro-despues" }] },
-        { id: "cielo", etiqueta: "El Campo del Salar (cielo)", zona: [70, 9, 20, 26],
+        { id: "cielo", etiqueta: "El Campo del Salar (cielo)", en: [13, 0, 3, 5],
           si: { noBandera: "c1-nova" },
           acciones: [{ dialogo: "c1-cielo-1" }] },
-        { id: "cielo", etiqueta: "El Campo del Salar (cielo)", zona: [70, 9, 20, 26],
+        { id: "cielo", etiqueta: "El Campo del Salar (cielo)", en: [13, 0, 3, 5],
           si: { bandera: "c1-nova" },
           acciones: [{ dialogo: "c1-cielo-nova" }] }
       ]
@@ -123,35 +149,60 @@ DATOS.capitulos.cap1 = {
 
     "c1-cupula": {
       nombre: "Cúpula del telescopio",
-      fondo: "c1-cupula",
+      mapa: {
+        modo: "metal",
+        terreno: [
+          "WWWWWWWWWWWWW",
+          "wDwwwwwwwwwww",
+          "ppppppppppppp",
+          "ppppppppppppp",
+          "ppppppppppppp",
+          "ppppppppppppp",
+          "ppppppppppppp",
+          "ppppppppppppp",
+          "ppppppppppppp",
+          "ppppppdpppppp"
+        ],
+        objetos: [
+          ["puerta-cerrada", 1, 1, { noBandera: "c1-archivo-abierto" }],
+          ["tablero-estrellas", 3, 1],
+          ["pizarra", 9, 1, { noBandera: "c1-ley" }],
+          ["pizarra-ley", 9, 1, { bandera: "c1-ley", noBandera: "c1-refutada" }],
+          ["pizarra-tachada", 9, 1, { bandera: "c1-refutada" }],
+          ["telescopio", 5, 2], ["consola", 1, 4], ["mesa", 3, 6], ["cuaderno-rojo", 3, 6],
+          ["estante", 11, 1], ["planta", 12, 8], ["silla", 2, 5]
+        ],
+        inicio: [6, 8, "arriba"],
+        desde: { "c1-exterior": [6, 8, "arriba"], "c1-archivo": [1, 2, "abajo"] }
+      },
       alEntrar: [
         { si: { noBandera: "c1-intro" }, entonces: [{ dialogo: "c1-encargo" }] }
       ],
       hotspots: [
-        { id: "telescopio", etiqueta: "Telescopio", zona: [45, 14, 12, 70],
+        { id: "telescopio", etiqueta: "Telescopio", en: [5, 2, 2, 3],
           si: { noBandera: "c1-nova" },
           acciones: [{ dialogo: "c1-telescopio-1" }] },
-        { id: "telescopio", etiqueta: "Telescopio", zona: [45, 14, 12, 70],
+        { id: "telescopio", etiqueta: "Telescopio", en: [5, 2, 2, 3],
           si: { bandera: "c1-nova", noBandera: "c1-refutada" },
           acciones: [{ dialogo: "c1-telescopio-nova" }] },
-        { id: "telescopio", etiqueta: "Telescopio", zona: [45, 14, 12, 70],
+        { id: "telescopio", etiqueta: "Telescopio", en: [5, 2, 2, 3],
           si: { bandera: "c1-refutada" },
           acciones: [{ dialogo: "c1-telescopio-despues" }] },
 
-        { id: "fotometro", etiqueta: "Pantalla del fotómetro", zona: [12.5, 47.5, 16.5, 19],
+        { id: "fotometro", etiqueta: "Pantalla del fotómetro", en: [1, 4, 2, 1],
           si: { noBandera: "c1-nova" },
           acciones: [{ dialogo: "c1-fotometro-1" }] },
-        { id: "fotometro", etiqueta: "Pantalla del fotómetro", zona: [12.5, 47.5, 16.5, 19],
+        { id: "fotometro", etiqueta: "Pantalla del fotómetro", en: [1, 4, 2, 1],
           si: { bandera: "c1-nova" },
           acciones: [{ dialogo: "c1-fotometro-nova" }] },
 
-        { id: "cuaderno-collao", etiqueta: "Cuaderno rojo de la Dra. Collao", zona: [29.5, 62, 7, 7.5],
+        { id: "cuaderno-collao", etiqueta: "Cuaderno rojo de la Dra. Collao", en: [3, 6],
           acciones: [{ dialogo: "c1-cuaderno-collao" }] },
 
-        { id: "collao", etiqueta: "Dra. Inés Collao", zona: [61, 40, 11.5, 50],
+        { id: "collao", etiqueta: "Dra. Inés Collao", en: [9, 5], sprite: "collao", mira: "izq",
           si: { noBandera: "c1-refutada" },
           acciones: [{ dialogo: "c1-collao" }] },
-        { id: "collao", etiqueta: "Dra. Inés Collao", zona: [61, 40, 11.5, 50],
+        { id: "collao", etiqueta: "Dra. Inés Collao", en: [9, 5], sprite: "collao", mira: "izq",
           si: { bandera: "c1-refutada", noBandera: "c1-balanza" },
           acciones: [
             { dialogo: "c1-collao-crisis" },
@@ -165,7 +216,7 @@ DATOS.capitulos.cap1 = {
             { poner: "c1-fin" },
             { finCapitulo: true }
           ] },
-        { id: "collao", etiqueta: "Dra. Inés Collao", zona: [61, 40, 11.5, 50],
+        { id: "collao", etiqueta: "Dra. Inés Collao", en: [9, 5], sprite: "collao", mira: "izq",
           si: { bandera: "c1-balanza", noBandera: "c1-conclusion" },
           acciones: [
             { dialogo: "c1-collao-retomar" },
@@ -176,7 +227,7 @@ DATOS.capitulos.cap1 = {
             { poner: "c1-fin" },
             { finCapitulo: true }
           ] },
-        { id: "collao", etiqueta: "Dra. Inés Collao", zona: [61, 40, 11.5, 50],
+        { id: "collao", etiqueta: "Dra. Inés Collao", en: [9, 5], sprite: "collao", mira: "izq",
           si: { bandera: "c1-conclusion", noBandera: "c1-fin" },
           acciones: [
             { dialogo: "c1-collao-reflexion" },
@@ -184,14 +235,14 @@ DATOS.capitulos.cap1 = {
             { poner: "c1-fin" },
             { finCapitulo: true }
           ] },
-        { id: "collao", etiqueta: "Dra. Inés Collao", zona: [61, 40, 11.5, 50],
+        { id: "collao", etiqueta: "Dra. Inés Collao", en: [9, 5], sprite: "collao", mira: "izq",
           si: { bandera: "c1-fin" },
           acciones: [{ dialogo: "c1-collao-fin" }, { finCapitulo: true }] },
 
-        { id: "pizarra", etiqueta: "Pizarra de leyes", zona: [77, 21, 19.5, 31],
+        { id: "pizarra", etiqueta: "Pizarra de leyes", en: [9, 1, 2, 1],
           si: { noBandera: "c1-ley", registrosMenos: 6 },
           acciones: [{ dialogo: "c1-pizarra-faltan" }] },
-        { id: "pizarra", etiqueta: "Pizarra de leyes", zona: [77, 21, 19.5, 31],
+        { id: "pizarra", etiqueta: "Pizarra de leyes", en: [9, 1, 2, 1],
           si: { noBandera: "c1-ley", registrosMin: 6 },
           acciones: [
             { dialogo: "c1-pizarra-pre" },
@@ -199,11 +250,11 @@ DATOS.capitulos.cap1 = {
             { poner: "c1-ley", desbloquear: { cuaderno: "induccion", glosario: ["ley-cientifica", "generalizacion-universal"] } },
             { dialogo: "c1-ley-celebra" }
           ] },
-        { id: "pizarra", etiqueta: "Pizarra de leyes", zona: [77, 21, 19.5, 31],
+        { id: "pizarra", etiqueta: "Pizarra de leyes", en: [9, 1, 2, 1],
           si: { bandera: "c1-ley" },
           acciones: [{ dialogo: "c1-pizarra-ver" }] },
 
-        { id: "puerta-archivo", etiqueta: "Puerta del archivo", zona: [1, 39, 8.5, 47],
+        { id: "puerta-archivo", etiqueta: "Puerta del archivo", en: [1, 1],
           si: { noBandera: "c1-archivo-abierto" },
           acciones: [{ dialogo: "c1-archivo-cerrado" }],
           usar: {
@@ -213,46 +264,84 @@ DATOS.capitulos.cap1 = {
               { ir: "c1-archivo" }
             ]
           } },
-        { id: "puerta-archivo", etiqueta: "Entrar al archivo", zona: [1, 39, 8.5, 47], salida: true,
+        { id: "puerta-archivo", etiqueta: "Entrar al archivo", en: [1, 1], pisar: true,
           si: { bandera: "c1-archivo-abierto" },
           acciones: [{ ir: "c1-archivo" }] },
 
-        { id: "salida", etiqueta: "Bajar a la explanada", zona: [88, 80, 12, 20], salida: true,
+        { id: "salida", etiqueta: "Bajar a la explanada", en: [6, 9], pisar: true,
           acciones: [{ ir: "c1-exterior" }] }
       ]
     },
 
     "c1-archivo": {
       nombre: "Archivo de placas",
-      fondo: "c1-archivo",
+      mapa: {
+        modo: "madera",
+        terreno: [
+          "WWWWWWWWWW",
+          "wwwwwwwwww",
+          "oooooooooo",
+          "oooooooooo",
+          "oooooooooo",
+          "oooooooooo",
+          "oooooooooo",
+          "oooooodooo"
+        ],
+        objetos: [
+          ["archivador", 1, 1], ["cuadro", 6, 1], ["estante", 3, 1],
+          ["escritorio", 4, 4], ["bitacora", 5, 4], ["mesa", 8, 2], ["computador", 8, 2], ["silla", 8, 3], ["planta", 9, 6]
+        ],
+        inicio: [6, 6, "arriba"],
+        desde: { "c1-cupula": [6, 6, "arriba"] }
+      },
       hotspots: [
-        { id: "archivador", etiqueta: "Archivador de placas fotográficas", zona: [7, 36, 19.5, 53],
+        { id: "archivador", etiqueta: "Archivador de placas fotográficas", en: [1, 1, 2, 2],
           acciones: [{ dialogo: "c1-placas" }] },
-        { id: "bitacora", etiqueta: "Bitácora de 1978", zona: [40, 64, 15, 9],
+        { id: "bitacora", etiqueta: "Bitácora de 1978", en: [5, 4],
           acciones: [{ dialogo: "c1-bitacora" }] },
-        { id: "computador", etiqueta: "Catálogo digital", zona: [69, 44.5, 15, 22],
+        { id: "computador", etiqueta: "Catálogo digital", en: [8, 2],
           acciones: [{ dialogo: "c1-catalogo" }] },
-        { id: "foto", etiqueta: "Fotografía antigua", zona: [71.5, 16, 10.5, 18],
+        { id: "foto", etiqueta: "Fotografía antigua", en: [6, 1],
           acciones: [{ dialogo: "c1-foto" }] },
-        { id: "salida", etiqueta: "Volver a la cúpula", zona: [89, 36, 10, 52], salida: true,
+        { id: "salida", etiqueta: "Volver a la cúpula", en: [6, 7], pisar: true,
           acciones: [{ ir: "c1-cupula" }] }
       ]
     },
 
     "c1-gallinero": {
       nombre: "Patio de Don Ramiro",
-      fondo: "c1-gallinero",
+      mapa: {
+        modo: "atardecer",
+        tinte: "#ffd8c0",
+        terreno: [
+          "AAAAAAAAAAAAAA",
+          "AAAAAAAAAAAAAA",
+          "fttttttttttttf",
+          "fttttttttttttf",
+          "fttttttttttttf",
+          "ttttttttttttff",
+          "fttttttttttttf",
+          "fttttttttttttf",
+          "ffffffffffffff"
+        ],
+        objetos: [
+          ["ventana-adobe", 4, 1], ["ventana-adobe", 10, 1], ["gallinero", 1, 2], ["fogon", 11, 6],
+          ["gallina-blanca", 4, 6], ["gallina-cafe", 8, 7], ["gallina-blanca", 12, 3]
+        ],
+        inicio: [1, 5, "der"],
+        desde: { "c1-exterior": [1, 5, "der"] }
+      },
       alEntrar: [
         { si: { noBandera: "c1-gallina" }, entonces: [{ dialogo: "c1-gallina-diario" }] }
       ],
       hotspots: [
-        { id: "clotilde", etiqueta: "Clotilde", zona: [39, 62, 13, 27],
+        { id: "clotilde", etiqueta: "Clotilde", en: [6, 5], sprite: "clotilde", mira: "izq",
           acciones: [{ dialogo: "c1-clotilde" }] },
-        { id: "ramiro", etiqueta: "Don Ramiro", zona: [61, 42, 11, 50],
+        { id: "ramiro", etiqueta: "Don Ramiro", en: [9, 4], sprite: "ramiro",
           acciones: [{ dialogo: "c1-ramiro-patio" }] },
-        { id: "olla", etiqueta: "Olla sobre el fogón", zona: [76.5, 79, 9.5, 14],
+        { id: "olla", etiqueta: "Olla sobre el fogón", en: [11, 6],
           acciones: [{ dialogo: "c1-olla" }] },
-        { id: "salida", etiqueta: "Volver a la explanada", zona: [0, 50, 8, 40], salida: true,
+        { id: "salida", etiqueta: "Volver a la explanada", en: [0, 5], pisar: true,
           acciones: [{ poner: "c1-noche" }, { ir: "c1-exterior" }] }
       ]
     }
@@ -266,7 +355,7 @@ DATOS.capitulos.cap1 = {
     "c1-llegada": [
       { texto: "Desierto de Atacama, casi 3.000 metros de altura. El aire es tan seco y el cielo tan oscuro que se ven miles de estrellas a simple vista." },
       { texto: "Hoy empieza de verdad tu práctica en el **Observatorio Alto Tamarugo**. Te dijeron que buscaras a la Dra. Inés Collao en la cúpula del telescopio." },
-      { texto: "**Consejo:** pulsa las zonas de la escena para interactuar. Con la tecla **R** (o el botón «Resaltar zonas») verás todo lo que se puede explorar. Nada tiene tiempo límite.",
+      { texto: "**Consejo:** recuerda: flechas para caminar, **A** (Enter o Espacio) para interactuar y **R** para ver los lugares importantes. La cúpula es el edificio blanco de la izquierda.",
         acciones: [{ poner: "c1-llegada" }] }
     ],
 
@@ -281,7 +370,7 @@ DATOS.capitulos.cap1 = {
       { id: "donde", quien: "collao", texto: "De las observaciones. Miras muchos casos, notas un patrón y das un salto: afirmas que el patrón vale para _todos_ los casos, también los que nadie ha visto. A ese salto se le llama **inducción**.",
         acciones: [{ desbloquear: { glosario: "induccion" } }] },
       { id: "tarea", quien: "collao", texto: "Reúne al menos **seis observaciones** del brillo de esas estrellas, de fuentes distintas: el telescopio, el fotómetro, mi cuaderno, el archivo antiguo… y Don Ramiro, el cuidador, que lleva décadas mirando ese cielo." },
-      { quien: "collao", texto: "Toma, la llave del archivo. Para usarla, elígela en tu inventario (abajo) y después pulsa la puerta. Lo que registres queda en tu **cuaderno de campo** (tecla C).",
+      { quien: "collao", texto: "Toma, la llave del archivo: es esa puerta de la izquierda. Para usarla, ponte frente a la puerta y elige la llave en tu **mochila** (tecla I). Lo que registres queda en tu **cuaderno de campo** (tecla C).",
         acciones: [{ dar: "llave-archivo", poner: "c1-intro" }] },
       { quien: "collao", texto: "Cuando tengas suficientes observaciones, escribe la ley en la pizarra." }
     ],
@@ -302,7 +391,7 @@ DATOS.capitulos.cap1 = {
     ],
 
     "c1-archivo-cerrado": [
-      { si: { tiene: "llave-archivo" }, texto: "Está cerrada con llave. Tienes la llave del archivo: elígela en el inventario (abajo) y después pulsa esta puerta.", ir: "fin" },
+      { si: { tiene: "llave-archivo" }, texto: "Está cerrada con llave. Tienes la llave del archivo: mirando hacia esta puerta, ábrela desde tu **mochila** (tecla I).", ir: "fin" },
       { texto: "Está cerrada con llave. La Dra. Collao debe tenerla." }
     ],
 
@@ -396,7 +485,7 @@ DATOS.capitulos.cap1 = {
       { id: "r2", quien: "ramiro", texto: "Puede ser: con lo que ella sabía, esperar el maíz era lo más sensato. Y aun así se iba a equivocar. Las dos cosas pueden ser ciertas a la vez.", ir: "comun" },
       { id: "comun", texto: "Esta escena es una versión de un ejemplo del filósofo **Bertrand Russell** (1912): un animal que, tras muchas experiencias repetidas, espera que el futuro sea igual al pasado… justo hasta el día en que no lo es.",
         acciones: [{ poner: "c1-gallina", desbloquear: { cuaderno: "gallina-russell" } }] },
-      { texto: "Está anocheciendo. Cuando quieras, sal del patio hacia la explanada." }
+      { texto: "Está anocheciendo. Cuando quieras, sal del patio por la izquierda hacia la explanada." }
     ],
     "c1-clotilde": [
       { texto: "Clotilde te mira de reojo. En su diario imaginario acaba de corregir su ley: «_Casi_ todas las mañanas, el humano trae maíz… hasta nuevo aviso»." }

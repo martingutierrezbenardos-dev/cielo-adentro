@@ -287,6 +287,8 @@
       construir: function (cuerpo, mm) {
         var c = crear("div", "inicio-botones");
         c.appendChild(boton(T().volverAlJuego, "boton-principal", function () { mm.cerrar(); }));
+        c.appendChild(boton(T().mochila, null, function () { mm.cerrar(); CA.Inventario.abrir(); }));
+        c.appendChild(boton(T().cuadernoTitulo, null, function () { mm.cerrar(); abrirCuaderno("entradas"); }));
         c.appendChild(boton(T().misRespuestas, null, function () { mm.cerrar(); CA.Exportar.abrir(); }));
         c.appendChild(boton(T().ajustes, null, function () { mm.cerrar(); abrirAjustes(); }));
         c.appendChild(boton(T().ayuda, null, function () { mm.cerrar(); abrirAyuda(); }));
@@ -306,8 +308,18 @@
 
     if (ev.key === "Escape") {
       if (sup && sup.cerrable) { ev.preventDefault(); sup.cerrar(); return; }
-      if (CA.Inventario.seleccionado()) { CA.Inventario.deseleccionar(); return; }
-      if (document.getElementById("escenario").classList.contains("resaltar")) { CA.Escena.alternarResaltado(false); return; }
+      if (CA.Escena.resaltado && CA.Escena.resaltado()) { CA.Escena.alternarResaltado(false); return; }
+      return;
+    }
+
+    // En menús y ventanas, las flechas mueven el cursor entre botones (como en la Game Boy).
+    if (sup && (ev.key === "ArrowDown" || ev.key === "ArrowUp") && tag === "BUTTON") {
+      var fb = enfocables(sup.el).filter(function (e) { return e.tagName === "BUTTON"; });
+      var j = fb.indexOf(document.activeElement);
+      if (j !== -1) {
+        ev.preventDefault();
+        fb[(j + (ev.key === "ArrowDown" ? 1 : -1) + fb.length) % fb.length].focus();
+      }
       return;
     }
 
@@ -323,11 +335,12 @@
     if (escribiendo || ev.ctrlKey || ev.metaKey || ev.altKey) return;
     if (!CA.Juego.enPartida()) return;
     var k = ev.key.toLowerCase();
-    if (sup && !(k === "c" && sup.tipo === "cuaderno")) return;
+    if (sup && !(k === "c" && sup.tipo === "cuaderno") && !(k === "i" && sup.tipo === "mochila")) return;
+    if (CA.Dialogo.abierto() && k !== "c" && k !== "g") return;
     if (k === "r") { ev.preventDefault(); CA.Escena.alternarResaltado(); }
     else if (k === "c") { ev.preventDefault(); abrirCuaderno("entradas"); }
     else if (k === "g") { ev.preventDefault(); abrirCuaderno("glosario"); }
-    else if (k === "i") { ev.preventDefault(); CA.Inventario.enfocar(); }
+    else if (k === "i") { ev.preventDefault(); CA.Inventario.abrir(); }
     else if (ev.key === "?") { ev.preventDefault(); abrirAyuda(); }
     else if (k === "m") { ev.preventDefault(); abrirMenu(); }
   }
@@ -357,6 +370,7 @@
       document.getElementById("btn-cuaderno").addEventListener("click", function () { abrirCuaderno("entradas"); });
       document.getElementById("btn-glosario").addEventListener("click", function () { abrirCuaderno("glosario"); });
       document.getElementById("btn-resaltar").addEventListener("click", function () { CA.Escena.alternarResaltado(); });
+      document.getElementById("btn-mochila").addEventListener("click", function () { CA.Inventario.abrir(); });
       document.getElementById("btn-ajustes").addEventListener("click", abrirAjustes);
       document.getElementById("btn-menu").addEventListener("click", abrirMenu);
       document.addEventListener("keydown", teclado);

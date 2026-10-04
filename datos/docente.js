@@ -38,10 +38,10 @@ DATOS.docente = {
     recorrido: [
       "Camino: mirar el charco (espejismo) y la Luna → Subir al observatorio.",
       "Pieza: leer el libro (Descartes) → Dormir. (El vaso con bombilla es opcional.)",
-      "Sueño: probar el pellizco, el reloj y preguntarle a la Dra. Collao → pulsar la luz brillante para despertar.",
+      "Sueño: probar el pellizco, el reloj y preguntarle a la Dra. Collao → interactuar con la luz brillante para despertar.",
       "Pieza: Valentina golpea la puerta → ir al planetario.",
-      "Planetario: hablar con el eco de Descartes → «La criba de la duda».",
-      "Hablar con el eco de Hume → «Rastrear ideas» → «La horquilla de Hume» → reflexión final."
+      "Planetario: hablar con el eco de Descartes → duelo «La criba de la duda».",
+      "Hablar con el eco de Hume → duelos «Rastrear ideas» y «La horquilla de Hume» → reflexión final."
     ],
     soluciones: {
       "c0-criba": "Nivel 1 (sentidos): caen el charco y la Luna; resisten las demás. Nivel 2 (sueño): caen «Estoy aquí…» y «Tengo un cuerpo…»; resisten 2 + 3 = 5, el cuadrado y «existo». Nivel 3 (genio maligno): caen 2 + 3 = 5 y el cuadrado; resiste «Yo, que ahora estoy dudando, existo». Pregunta final: «Porque para dudar, soñar o ser engañado tengo que estar pensando…».",
@@ -78,15 +78,15 @@ DATOS.docente = {
     ],
     recorrido: [
       "Explanada → Entrar a la cúpula (la Dra. Collao entrega la llave del archivo).",
-      "Registrar 6 de 7 observaciones: telescopio, fotómetro, cuaderno rojo (cúpula); placas, bitácora, catálogo (archivo: seleccionar la llave en el inventario y pulsar la puerta); Don Ramiro (explanada).",
+      "Registrar 6 de 7 observaciones: telescopio, fotómetro, cuaderno rojo (cúpula); placas, bitácora, catálogo (archivo: frente a la puerta, abrir la mochila con I y elegir la llave); Don Ramiro (explanada).",
       "Pizarra → puzle «Formular la ley».",
-      "Casa de Don Ramiro → escena de la gallina (Russell) → salir del patio.",
+      "Don Ramiro, frente a su casa → escena de la gallina (Russell) → salir del patio.",
       "En la explanada aparece la nova → mirar el cielo (opcional) → telescopio de la cúpula.",
-      "Hablar con la Dra. Collao → «La balanza de la certeza» → «¿Y ahora qué hacemos con la ley?» → reflexión final."
+      "Hablar con la Dra. Collao → duelo «La balanza de la certeza» → «¿Y ahora qué hacemos con la ley?» → reflexión final."
     ],
     soluciones: {
       "c1-ley": "Opción correcta: «Todas las estrellas del Campo del Salar tienen brillo constante.» (Las otras son un resumen, un enunciado existencial débil y una afirmación exagerada: «está demostrado».)",
-      "c1-balanza": "Agregar al menos 5 confirmaciones (con «+1» o «+1.000»), luego «Agregar la observación de S-12». Respuesta: «Ninguna cantidad finita basta: la conclusión siempre va más allá de los casos observados.»",
+      "c1-balanza": "En el duelo, usar al menos 5 confirmaciones (con «+1» o «+1.000»), luego «Agregar la observación de S-12». Respuesta: «Ninguna cantidad finita basta: la conclusión siempre va más allá de los casos observados.»",
       "c1-conclusion": "Paso 1: reformular como hipótesis revisable. Paso 2: «Ninguna cantidad finita de casos confirmatorios garantiza lógicamente…». Paso 3: «Sí: generalizar nos permite predecir y actuar…»."
     }
   }

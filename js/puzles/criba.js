@@ -1,12 +1,11 @@
-/* Cap. 0 — «La criba de la duda»: se aplican, uno tras otro, los niveles de duda de Descartes
-   a un conjunto de creencias. En cada nivel hay que decidir cuáles resisten y cuáles caen.
-   Las que caen ya no vuelven. Al final solo queda lo que resiste a toda duda. */
+/* Cap. 0 — «La criba de la duda» como duelo: el eco de Descartes ataca con tres niveles
+   de duda y tus creencias son tu equipo. En cada nivel decides cuáles resisten y cuáles
+   caen. Las que caen quedan fuera del duelo. Al final solo queda lo que resiste a toda duda. */
 (function (CA) {
   "use strict";
 
   function T() { return DATOS.config.textos; }
   var esc = function (s) { return CA.UI.esc(s); };
-  var limpio = function (t) { return CA.html(t).replace(/^<p>/, "").replace(/<\/p>$/, ""); };
 
   CA.Puzles.registrar("criba", function (cfg, ctx) {
     var est = ctx.estado;
@@ -14,144 +13,111 @@
     if (!est.ok) est.ok = {};          // "nivel:id" -> true cuando se respondió bien
     if (!est.intentos) est.intentos = 0;
     var E = cfg.etiquetas;
+    var D = cfg.duelo || {};
+    var nombreRival = D.nombreRival || "ECO DE DESCARTES";
 
     function enPie(nivel) {
-      // Creencias que siguen en pie al comenzar este nivel.
       return cfg.creencias.filter(function (c) { return c.caeEn == null || c.caeEn >= nivel; });
     }
-    function caidas(nivel) {
-      return cfg.creencias.filter(function (c) { return c.caeEn != null && c.caeEn < nivel; });
-    }
+    function tono(cr) { return CA.Combate.TONOS[cfg.creencias.indexOf(cr) % CA.Combate.TONOS.length]; }
 
-    function pintar(enfocar) {
-      var c = ctx.cuerpo;
-      c.innerHTML = "";
-      var fin = est.nivel >= cfg.niveles.length;
-      if (est.nivel === 0) c.appendChild(CA.UI.crear("div", "puzle-intro", CA.html(cfg.intro)));
+    var total = 0;
+    cfg.niveles.forEach(function (n, i) { total += enPie(i).length; });
 
-      // Progreso de niveles
-      var prog = cfg.niveles.map(function (n, i) {
-        var marca = i < est.nivel ? "✔" : (i === est.nivel ? "▶" : "·");
-        return '<span style="margin-right:1rem;' + (i === est.nivel ? "color:var(--ui-acento);font-weight:700" : "") + '">' + marca + " " + esc(n.titulo) + "</span>";
-      }).join("");
-      c.appendChild(CA.UI.crear("p", "contador", prog));
+    var b = CA.Combate.crear(ctx, { fondo: D.fondo || "planetario", rival: { sprite: D.rival || "descartes" }, tuyo: { icono: "pensamiento", tono: tono(cfg.creencias[0]) } });
 
-      if (!fin) {
-        var nv = cfg.niveles[est.nivel];
-        c.appendChild(CA.UI.crear("h3", null, E.nivel + " " + (est.nivel + 1) + ": " + esc(nv.titulo)));
-        c.appendChild(CA.UI.crear("div", "panel-suave", CA.html(nv.argumento)));
-        c.appendChild(CA.UI.crear("p", null, "<strong>" + esc(E.pregunta) + "</strong>"));
-
-        var lista = CA.UI.crear("div", "lista-entradas");
-        var todasOk = true;
-        enPie(est.nivel).forEach(function (cr) {
-          var clave = est.nivel + ":" + cr.id;
-          var cae = cr.caeEn === est.nivel;
-          var tarjeta = CA.UI.crear("div", "entrada");
-          tarjeta.appendChild(CA.UI.crear("h4", null, "«" + esc(cr.texto) + "»"));
-          var fila = CA.UI.crear("div", "pestanas");
-          fila.style.marginBottom = "0";
-          var retro = CA.UI.crear("div", null);
-          retro.setAttribute("aria-live", "polite");
-          var bR = CA.UI.boton(E.resiste, null, null);
-          var bC = CA.UI.boton(E.cae, null, null);
-          function responder(eligeCae, boton) {
-            var bien = eligeCae === cae;
-            est.intentos++;
-            if (bien) est.ok[clave] = true;
-            ctx.guardar();
-            if (bien) { pintar(clave); return; }
-            boton.classList.add("incorrecta");
-            retro.className = "retro mal";
-            retro.innerHTML = "<strong class=\"mal\">" + T().noDelTodo + "</strong> " + limpio(cr.pistaError && cr.pistaError[est.nivel] ? cr.pistaError[est.nivel] : (cae ? E.errorDebiaCaer : E.errorDebiaResistir));
-          }
-          bR.addEventListener("click", function () { responder(false, bR); });
-          bC.addEventListener("click", function () { responder(true, bC); });
-          bR.dataset.k = clave + ":r";
-          if (est.ok[clave]) {
-            bR.disabled = bC.disabled = true;
-            (cae ? bC : bR).classList.add("correcta");
-            (cae ? bC : bR).disabled = false;
-            (cae ? bC : bR).setAttribute("aria-disabled", "true");
-            retro.className = "retro ok";
-            retro.innerHTML = "<strong class=\"ok\">" + (cae ? E.cayo : E.resistio) + "</strong> " + limpio(cr.retro[est.nivel] || "");
-            tarjeta.style.opacity = cae ? ".8" : "1";
-          } else {
-            todasOk = false;
-          }
-          fila.appendChild(bR);
-          fila.appendChild(bC);
-          tarjeta.appendChild(fila);
-          tarjeta.appendChild(retro);
-          lista.appendChild(tarjeta);
-        });
-        c.appendChild(lista);
-
-        if (todasOk) {
-          var f = CA.UI.crear("div", "fila-botones");
-          var sig = CA.UI.boton(est.nivel + 1 < cfg.niveles.length ? E.siguienteNivel : E.verQueQueda, "boton-principal", function () {
-            est.nivel++;
-            ctx.guardar();
-            pintar("inicio");
-            ctx.cuerpo.parentNode.scrollTop = 0;
-          });
-          f.appendChild(sig);
-          c.appendChild(f);
-          sig.focus();
-        } else if (enfocar && enfocar !== "inicio") {
-          var siguiente = ctx.cuerpo.querySelector("button:not(:disabled):not([aria-disabled])");
-          if (siguiente) siguiente.focus();
-        }
-      } else {
-        // Lo que resiste a todo
-        var quedan = enPie(cfg.niveles.length);
-        c.appendChild(CA.UI.crear("h3", null, esc(E.queda)));
-        quedan.forEach(function (cr) {
-          c.appendChild(CA.UI.crear("div", "entrada", "<h4>«" + esc(cr.texto) + "»</h4>"));
-        });
-        c.appendChild(CA.UI.crear("div", "panel-suave", CA.html(cfg.textoFinal)));
-        preguntaFinal(c);
-      }
-
-      // Creencias caídas
-      var ca = caidas(Math.min(est.nivel, cfg.niveles.length));
-      if (ca.length) {
-        var html = "<h3>" + esc(E.yaCayeron) + '</h3><ul class="registro-lista">';
-        ca.forEach(function (cr) {
-          html += '<li class="contradice"><s>«' + esc(cr.texto) + "»</s> — " + esc(E.cayoCon) + " " + esc(cfg.niveles[cr.caeEn].titulo.toLowerCase()) + "</li>";
-        });
-        c.appendChild(CA.UI.crear("div", null, html + "</ul>"));
-      }
-    }
-
-    function preguntaFinal(c) {
-      var p = cfg.pregunta;
-      c.appendChild(CA.UI.crear("h3", null, esc(p.texto)));
-      var ops = CA.UI.crear("div", "opciones");
-      var retro = CA.UI.crear("div", null);
-      retro.setAttribute("aria-live", "polite");
-      p.opciones.forEach(function (op) {
-        var b = CA.UI.boton(esc(op.texto), "opcion", function () {
-          b.classList.add(op.correcta ? "correcta" : "incorrecta");
-          retro.className = "retro " + (op.correcta ? "ok" : "mal");
-          retro.innerHTML = "<strong class=\"" + (op.correcta ? "ok" : "mal") + "\">" + (op.correcta ? T().bien : T().noDelTodo) + "</strong> " + limpio(op.retro);
-          if (op.correcta) {
-            ops.querySelectorAll("button").forEach(function (x) { x.disabled = x !== b; });
-            var f = CA.UI.crear("div", "fila-botones");
-            var fin = CA.UI.boton(T().terminar, "boton-principal", ctx.completar);
-            f.appendChild(fin);
-            retro.appendChild(f);
-            fin.focus();
-          } else {
-            b.disabled = true;
-          }
-        });
-        ops.appendChild(b);
+    function infoRival() {
+      var hechas = Object.keys(est.ok).length;
+      var nv = cfg.niveles[Math.min(est.nivel, cfg.niveles.length - 1)];
+      b.info("rival", {
+        nombre: nombreRival,
+        detalle: est.nivel < cfg.niveles.length ? esc(E.nivel + " " + (est.nivel + 1) + ": " + nv.titulo) : esc(D.sinDudas || "Sin más dudas"),
+        vida: { etq: D.etiquetaVida || "DUDAS", valor: (total - hechas) / total, texto: (total - hechas) + "/" + total }
       });
-      c.appendChild(ops);
-      c.appendChild(retro);
+    }
+    function infoTuyo(cr) {
+      var nivel = Math.min(est.nivel, cfg.niveles.length);
+      b.info("tuyo", {
+        nombre: D.nombreTuyo || "TUS CREENCIAS",
+        detalle: cr ? "«" + esc(cr.texto) + "»" : "",
+        equipo: cfg.creencias.map(function (c) { return c.caeEn == null || c.caeEn >= nivel; })
+      });
     }
 
-    pintar();
-  });
+    async function nivel() {
+      var nv = cfg.niveles[est.nivel];
+      infoRival();
+      infoTuyo(null);
+      await b.animar("rival", "brillo");
+      await b.decir((D.usa || "¡{rival} usa {ataque}!").replace("{rival}", nombreRival).replace("{ataque}", nv.titulo.toUpperCase()));
+      await b.decir(nv.argumento);
+      var lista = enPie(est.nivel);
+      for (var i = 0; i < lista.length; i++) {
+        var cr = lista[i];
+        var clave = est.nivel + ":" + cr.id;
+        if (est.ok[clave]) continue;
+        var cae = cr.caeEn === est.nivel;
+        b.sprite("tuyo", { icono: "pensamiento", tono: tono(cr) });
+        infoTuyo(cr);
+        await b.animar("tuyo", "entrar");
+        for (;;) {
+          var r = await b.menu(E.pregunta, [
+            { html: esc(E.resiste), desc: D.descResiste || "Este argumento no alcanza para dudar de ella." },
+            { html: esc(E.cae), desc: D.descCae || "Con este argumento, se puede dudar de ella." }
+          ], "«" + cr.texto + "»\n\n_" + nv.titulo + "_");
+          var eligeCae = r === 1;
+          est.intentos++;
+          if (eligeCae === cae) {
+            est.ok[clave] = true;
+            ctx.guardar();
+            infoRival();
+            if (cae) {
+              await b.animar("tuyo", "golpe");
+              await b.animar("tuyo", "caer");
+              infoTuyo(cr);
+              await b.decir('<span class="ok">**' + E.cayo + "**</span> " + (cr.retro[est.nivel] || ""));
+            } else {
+              await b.animar("tuyo", "brillo");
+              await b.decir('<span class="ok">**' + E.resistio + "**</span> " + (cr.retro[est.nivel] || ""));
+            }
+            break;
+          }
+          ctx.guardar();
+          await b.animar("tuyo", "temblar");
+          var expl = cr.pistaError && cr.pistaError[est.nivel] ? cr.pistaError[est.nivel] : (cae ? E.errorDebiaCaer : E.errorDebiaResistir);
+          await b.decir('<span class="mal">**' + T().noDelTodo + "**</span> " + expl);
+        }
+      }
+      est.nivel++;
+      ctx.guardar();
+      if (est.nivel < cfg.niveles.length) await b.decir(E.siguienteNivel + "…");
+    }
+
+    (async function () {
+      infoRival();
+      infoTuyo(null);
+      var nuevo = est.nivel === 0 && !Object.keys(est.ok).length;
+      if (nuevo) {
+        await b.decir((D.intro || "¡El {rival} te desafía a un duelo de dudas!").replace("{rival}", nombreRival));
+        await b.decir(cfg.intro);
+      } else {
+        await b.decir(T().dueloRetomar);
+      }
+      while (est.nivel < cfg.niveles.length) await nivel();
+
+      // Lo que queda en pie
+      var quedan = enPie(cfg.niveles.length);
+      if (quedan.length) {
+        b.sprite("tuyo", { icono: "pensamiento", tono: tono(quedan[0]) });
+        infoTuyo(quedan[0]);
+        await b.animar("tuyo", "entrar");
+      }
+      infoRival();
+      await b.decir("**" + E.queda + "** " + quedan.map(function (c) { return "«" + c.texto + "»"; }).join(" "));
+      await b.decir(cfg.textoFinal);
+      await CA.Combate.pregunta(b, cfg.pregunta);
+      await b.decir(D.victoria || T().dueloVictoria);
+      ctx.completar();
+    })();
+  }, { combate: true });
 })(window.CA);

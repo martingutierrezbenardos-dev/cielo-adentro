@@ -1,4 +1,6 @@
-/* Diálogos con opciones. Avanzan solo cuando la persona pulsa (sin presión de tiempo). */
+/* Cuadro de texto estilo Game Boy: el texto aparece letra por letra, ▼ para seguir
+   y opciones con cursor ▶. Avanza solo cuando la persona lo decide (sin tiempo límite).
+   Teclas: Enter / Espacio / Z para seguir; flechas para elegir; 1, 2, 3… eligen directo. */
 (function (CA) {
   "use strict";
 
@@ -6,73 +8,143 @@
   var abiertos = 0;
   var resolverActual = null;
   var focoPrevio = null;
+  var escribiendo = null;   // { completar: fn } mientras el texto se está escribiendo
 
   function $(id) { return document.getElementById(id); }
+
+  function animacionesActivas() {
+    return !document.body.classList.contains("sin-animaciones") &&
+      !(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  }
+
+  /* Escribe el HTML de a poco: recorre los nodos de texto y los va llenando. */
+  function maquina(contenedor, html, alTerminar) {
+    contenedor.innerHTML = html;
+    if (!animacionesActivas()) { alTerminar(); return null; }
+    var nodos = [];
+    (function rec(n) {
+      n.childNodes.forEach(function (h) {
+        if (h.nodeType === 3) { nodos.push({ n: h, t: h.textContent }); h.textContent = ""; }
+        else rec(h);
+      });
+    })(contenedor);
+    var i = 0, k = 0, activo = true;
+    function terminar() {
+      if (!activo) return;
+      activo = false;
+      nodos.forEach(function (x) { x.n.textContent = x.t; });
+      alTerminar();
+    }
+    function tic() {
+      if (!activo) return;
+      var porTic = 3;
+      while (porTic-- > 0 && i < nodos.length) {
+        var x = nodos[i];
+        k++;
+        x.n.textContent = x.t.slice(0, k);
+        if (k >= x.t.length) { i++; k = 0; }
+      }
+      if (i >= nodos.length) terminar();
+      else setTimeout(tic, 16);
+    }
+    tic();
+    return { completar: terminar };
+  }
 
   function mostrarLinea(linea, opciones) {
     return new Promise(function (resolver) {
       var quien = linea.quien ? CA.Datos.personaje(linea.quien) : null;
       el.hidden = false;
-      el.className = "dialogo" + (quien && quien.retrato ? "" : " sin-retrato") + (quien ? "" : " narrador");
+      el.className = "dialogo" + (quien ? "" : " narrador") + (opciones && opciones.length ? " con-opciones" : "");
       el.innerHTML = "";
 
-      if (quien && quien.retrato) {
-        var r = document.createElement("div");
-        r.className = "dialogo-retrato";
-        r.setAttribute("aria-hidden", "true");
-        r.innerHTML = CA.Arte.retrato(quien.retrato);
-        el.appendChild(r);
-      }
+      var lector = document.createElement("div");
+      lector.className = "solo-lector";
+      lector.setAttribute("aria-live", "polite");
 
-      var cont = document.createElement("div");
+      var caja = document.createElement("div");
+      caja.className = "dialogo-caja";
+
       if (quien) {
         var n = document.createElement("div");
         n.className = "dialogo-nombre";
         n.textContent = CA.texto(quien.nombre);
-        cont.appendChild(n);
+        el.appendChild(n);
+        if (quien.retrato && CA.Pixel) {
+          var img = document.createElement("img");
+          img.className = "dialogo-retrato";
+          img.alt = "";
+          img.src = CA.Pixel.retrato(quien.retrato);
+          caja.appendChild(img);
+        }
       }
+
       var t = document.createElement("div");
       t.className = "dialogo-texto";
-      t.innerHTML = CA.html(linea.texto);
-      cont.appendChild(t);
+      t.setAttribute("aria-hidden", "true");
+      caja.appendChild(t);
 
-      var primerBoton;
+      var flecha = document.createElement("button");
+      flecha.type = "button";
+      flecha.className = "dialogo-flecha";
+      flecha.setAttribute("aria-label", DATOS.config.textos.continuar);
+      flecha.innerHTML = '<span aria-hidden="true">▼</span>';
+      caja.appendChild(flecha);
+      el.appendChild(caja);
+      el.appendChild(lector);
+
+      var html = CA.html(linea.texto);
+      lector.innerHTML = (quien ? CA.UI.esc(CA.texto(quien.nombre)) + ": " : "") + html;
+
+      var ops = null, botones = [];
       if (opciones && opciones.length) {
-        var ops = document.createElement("div");
+        ops = document.createElement("div");
         ops.className = "dialogo-opciones";
         ops.setAttribute("role", "group");
         ops.setAttribute("aria-label", "Opciones de respuesta");
+        ops.hidden = true;
         opciones.forEach(function (op, i) {
           var b = document.createElement("button");
           b.type = "button";
-          b.className = "boton";
-          b.innerHTML = '<span class="num">' + (i + 1) + ".</span> " + CA.html(op.texto).replace(/^<p>|<\/p>$/g, "");
+          b.className = "opcion-gb";
+          b.innerHTML = '<span class="cursor" aria-hidden="true">▶</span><span class="num">' + (i + 1) + ".</span> " + CA.html(op.texto).replace(/^<p>|<\/p>$/g, "");
           b.addEventListener("click", function () { terminar(op); });
           ops.appendChild(b);
-          if (!primerBoton) primerBoton = b;
+          botones.push(b);
         });
-        cont.appendChild(ops);
-      } else {
-        var c = document.createElement("div");
-        c.className = "dialogo-continuar";
-        var b2 = document.createElement("button");
-        b2.type = "button";
-        b2.className = "boton boton-principal";
-        b2.innerHTML = DATOS.config.textos.continuar + ' <span class="tecla" aria-hidden="true">Enter</span>';
-        b2.addEventListener("click", function () { terminar(null); });
-        c.appendChild(b2);
-        cont.appendChild(c);
-        primerBoton = b2;
+        el.insertBefore(ops, caja);
+        flecha.hidden = true;
       }
-      el.appendChild(cont);
-      el.scrollTop = 0;
+
+      function listo() {
+        escribiendo = null;
+        caja.classList.add("listo");
+        if (ops) {
+          ops.hidden = false;
+          if (!document.querySelector(".modal-fondo")) botones[0].focus({ preventScroll: true });
+        } else if (!document.querySelector(".modal-fondo")) {
+          flecha.focus({ preventScroll: true });
+        }
+      }
 
       function terminar(op) {
         resolverActual = null;
         resolver(op);
       }
-      resolverActual = { opciones: opciones, terminar: terminar };
-      if (primerBoton && !document.querySelector(".modal-fondo")) primerBoton.focus({ preventScroll: true });
+
+      flecha.addEventListener("click", function (e) { e.stopPropagation(); avanzar(); });
+      caja.addEventListener("click", function () { avanzar(); });
+
+      function avanzar() {
+        if (escribiendo) { escribiendo.completar(); return; }
+        if (!ops) terminar(null);
+      }
+
+      resolverActual = { opciones: opciones, terminar: terminar, avanzar: avanzar, botones: botones };
+      escribiendo = { completar: function () {} };
+      var m = maquina(t, html, listo);
+      if (m) escribiendo = m;
+      el.scrollTop = 0;
     });
   }
 
@@ -122,6 +194,7 @@
       if (gen === CA.generacion && abiertos === 0) {
         el.hidden = true;
         el.innerHTML = "";
+        escribiendo = null;
         if (focoPrevio && document.body.contains(focoPrevio) && !document.querySelector(".modal-fondo")) {
           focoPrevio.focus({ preventScroll: true });
         }
@@ -137,18 +210,56 @@
         if (!resolverActual || document.querySelector(".modal-fondo")) return;
         var tag = (ev.target && ev.target.tagName) || "";
         if (tag === "INPUT" || tag === "TEXTAREA") return;
+        var r = resolverActual;
+        var hayOps = r.opciones && r.opciones.length;
         var n = parseInt(ev.key, 10);
-        if (resolverActual.opciones && resolverActual.opciones.length && n >= 1 && n <= resolverActual.opciones.length) {
+        if (hayOps && !escribiendo && n >= 1 && n <= r.opciones.length) {
           ev.preventDefault();
-          resolverActual.terminar(resolverActual.opciones[n - 1]);
-        } else if ((!resolverActual.opciones || !resolverActual.opciones.length) && ev.key === "Enter" && tag !== "BUTTON") {
-          ev.preventDefault();
-          resolverActual.terminar(null);
+          r.terminar(r.opciones[n - 1]);
+          return;
         }
+        if (hayOps && !escribiendo && (ev.key === "ArrowDown" || ev.key === "ArrowUp" || ev.key === "s" || ev.key === "w")) {
+          ev.preventDefault();
+          var i = r.botones.indexOf(document.activeElement);
+          var d = ev.key === "ArrowDown" || ev.key === "s" ? 1 : -1;
+          i = i === -1 ? 0 : (i + d + r.botones.length) % r.botones.length;
+          r.botones[i].focus();
+          return;
+        }
+        var esA = ev.key === "Enter" || ev.key === " " || ev.key === "z" || ev.key === "Z" || ev.key === "x" || ev.key === "X";
+        if (!esA) return;
+        // En una opción con foco, Enter/Espacio la eligen (comportamiento normal del botón).
+        if (tag === "BUTTON" && ev.target.classList.contains("opcion-gb") && !escribiendo && (ev.key === "Enter" || ev.key === " ")) return;
+        ev.preventDefault();
+        if (escribiendo) { escribiendo.completar(); return; }
+        if (hayOps) {
+          if (ev.key === "z" || ev.key === "Z") {
+            var b = r.botones.indexOf(document.activeElement);
+            if (b !== -1) r.terminar(r.opciones[b]);
+          }
+          return;
+        }
+        r.avanzar();
       });
     },
 
     abierto: function () { return abiertos > 0; },
+
+    // Máquina de escribir reutilizable (la usan también los duelos).
+    escribir: maquina,
+
+    // Botón A en pantalla táctil.
+    botonA: function () {
+      var r = resolverActual;
+      if (!r) return;
+      if (escribiendo) { escribiendo.completar(); return; }
+      if (r.opciones && r.opciones.length) {
+        var b = r.botones.indexOf(document.activeElement);
+        if (b !== -1) r.terminar(r.opciones[b]);
+        return;
+      }
+      r.avanzar();
+    },
 
     // Cancela cualquier diálogo en curso (ver CA.reiniciarFlujo).
     reiniciar: function () {
@@ -156,6 +267,8 @@
       resolverActual = null;
       abiertos = 0;
       focoPrevio = null;
+      if (escribiendo) { try { escribiendo.completar(); } catch (e) { /* nada */ } }
+      escribiendo = null;
       if (el) { el.hidden = true; el.innerHTML = ""; }
       if (r) r.terminar(null);
     },

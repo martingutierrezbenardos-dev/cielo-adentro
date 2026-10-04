@@ -25,24 +25,58 @@ DATOS.capitulos.cap0 = {
 
   cierre: "**Lo que descubriste:** Descartes usa la duda como **método** para buscar una certeza absoluta y la encuentra en el «pienso, existo». Hume, en cambio, rastrea el origen de las ideas en la **experiencia** y distingue relaciones de ideas de cuestiones de hecho.\n\n**Pregunta para el próximo capítulo:** si todo lo que sabemos sobre los hechos viene de experiencias particulares, ¿cómo llegamos a leyes generales sobre _todos_ los casos?",
 
+  /* ---------------------------------------------------------
+     ESCENAS (mapas). Ver README: «Mapas y lugares».
+     mapa.terreno: una letra por baldosa. mapa.objetos: [tipo, x, y, condición].
+     Cada lugar (hotspot) está "en" [x, y] o [x, y, ancho, alto], en baldosas.
+     sprite: personaje que aparece ahí. pisar: se activa al caminar encima (puertas).
+     --------------------------------------------------------- */
   escenas: {
     "c0-camino": {
       nombre: "Camino al observatorio",
-      fondo: "c0-camino",
+      mapa: {
+        modo: "atardecer",
+        tinte: "#ffe4cc",
+        terreno: [
+          "aaaaaaaaaaaaaaaaaaaa",
+          "aaaaaaaaaaaaaaaaaaaa",
+          "bbbbbbbbbbbbbbbbbbbb",
+          "cccccccccccccccccccc",
+          "mmmmmmmmmmmmmmmmmmmm",
+          "___________:::______",
+          "..,.......,:::.,....",
+          ".........,.:::......",
+          "====================",
+          "-=-=-=-=-=-=-=-=-=-=",
+          "====================",
+          ".,......,......,..,.",
+          "......,.........,...",
+          "..,.......,.........",
+          ".......,.......,..,."
+        ],
+        objetos: [
+          ["luna", 2, 2], ["observatorio-lejos", 11, 4], ["camioneta", 3, 8],
+          ["charco", 15, 9], ["letrero", 15, 6], ["cactus", 1, 11], ["cactus", 17, 12],
+          ["cactus", 8, 6], ["piedra", 13, 13], ["piedra", 0, 7]
+        ],
+        inicio: [5, 7, "der"]
+      },
       alEntrar: [
         { si: { noBandera: "c0-llegada" }, entonces: [{ dialogo: "c0-llegada" }] }
       ],
       hotspots: [
-        { id: "espejismo", etiqueta: "Charco en el camino", zona: [54, 73, 20, 9],
+        { id: "espejismo", etiqueta: "Charco en el camino", en: [15, 9, 2, 1],
           acciones: [{ dialogo: "c0-espejismo" }] },
-        { id: "luna", etiqueta: "La Luna", zona: [12, 49, 14, 19],
+        { id: "luna", etiqueta: "La Luna", en: [2, 2, 2, 3],
           acciones: [{ dialogo: "c0-luna" }] },
-        { id: "ramiro", etiqueta: "Don Ramiro", zona: [30.5, 55, 9, 43],
+        { id: "ramiro", etiqueta: "Don Ramiro", en: [7, 7], sprite: "ramiro", mira: "izq",
           acciones: [{ dialogo: "c0-ramiro-camino" }] },
-        { id: "observatorio", etiqueta: "Subir al observatorio", zona: [66, 44, 12, 21], salida: true,
+        { id: "letrero", etiqueta: "Letrero", en: [15, 6],
+          acciones: [{ dialogo: "c0-letrero" }] },
+        { id: "observatorio", etiqueta: "Subir al observatorio", en: [11, 5, 3, 1], pisar: true,
           si: { bandera: ["c0-espejismo", "c0-luna"] },
           acciones: [{ dialogo: "c0-subir" }, { ir: "c0-pieza" }] },
-        { id: "observatorio", etiqueta: "Subir al observatorio", zona: [66, 44, 12, 21], salida: true,
+        { id: "observatorio", etiqueta: "Subir al observatorio", en: [11, 5, 3, 1], pisar: true,
           si: { alguna: [{ noBandera: "c0-espejismo" }, { noBandera: "c0-luna" }] },
           acciones: [{ dialogo: "c0-todavia-no" }] }
       ]
@@ -50,31 +84,49 @@ DATOS.capitulos.cap0 = {
 
     "c0-pieza": {
       nombre: "Tu pieza en la residencia",
-      fondo: "c0-pieza",
+      mapa: {
+        modo: "madera",
+        terreno: [
+          "WWWWWWWWWW",
+          "wwwwwwwwww",
+          "oooooooooo",
+          "oooooooooo",
+          "oooorrrooo",
+          "oooorrrooo",
+          "oooooooooo",
+          "oooooooodo"
+        ],
+        objetos: [
+          ["ventana", 3, 0], ["cuadro", 1, 1], ["estante", 8, 1], ["cama", 1, 2],
+          ["escritorio", 5, 2], ["libro", 5, 2], ["vaso", 7, 2], ["silla", 6, 3], ["planta", 9, 2]
+        ],
+        inicio: [8, 6, "arriba"],
+        desde: { "c0-camino": [8, 6, "arriba"], "c0-sueno": [2, 3, "abajo"] }
+      },
       alEntrar: [
         { si: { noBandera: "c0-pieza-vista" }, entonces: [{ dialogo: "c0-pieza-llegada" }] },
         { si: { bandera: "c0-desperto", noBandera: "c0-golpe" }, entonces: [{ dialogo: "c0-despertar" }] }
       ],
       hotspots: [
-        { id: "libro", etiqueta: "Libro con papelitos", zona: [65.5, 60, 11.5, 8.5],
+        { id: "libro", etiqueta: "Libro con papelitos", en: [5, 2],
           acciones: [{ dialogo: "c0-libro" }] },
-        { id: "vaso", etiqueta: "Vaso de agua con bombilla", zona: [79, 51, 6, 16], etiquetaArriba: true,
+        { id: "vaso", etiqueta: "Vaso de agua con bombilla", en: [7, 2],
           acciones: [{ dialogo: "c0-bombilla" }] },
-        { id: "ventana", etiqueta: "Ventana", zona: [34.5, 15.5, 22.5, 36],
+        { id: "ventana", etiqueta: "Ventana", en: [3, 1, 2, 1],
           acciones: [{ dialogo: "c0-ventana" }] },
-        { id: "cama", etiqueta: "Cama", zona: [3.5, 55, 29, 28],
+        { id: "cama", etiqueta: "Cama", en: [1, 2, 1, 2],
           si: { noBandera: "c0-libro" },
           acciones: [{ mensaje: "Todavía no tienes sueño. ¿Y ese libro sobre el escritorio?" }] },
-        { id: "cama", etiqueta: "Dormir", zona: [3.5, 55, 29, 28],
+        { id: "cama", etiqueta: "Dormir", en: [1, 2, 1, 2],
           si: { bandera: "c0-libro", noBandera: "c0-desperto" },
           acciones: [{ dialogo: "c0-dormir" }, { ir: "c0-sueno" }] },
-        { id: "cama", etiqueta: "Cama", zona: [3.5, 55, 29, 28],
+        { id: "cama", etiqueta: "Cama", en: [1, 2, 1, 2],
           si: { bandera: "c0-desperto" },
           acciones: [{ mensaje: "Ya no tienes nada de sueño. Valentina te espera en el pasillo." }] },
-        { id: "puerta", etiqueta: "Puerta", zona: [91.5, 36, 8, 50],
+        { id: "puerta", etiqueta: "Puerta", en: [8, 7], pisar: true,
           si: { noBandera: "c0-desperto" },
           acciones: [{ mensaje: "El pasillo está en silencio. Mejor descansar: mañana empieza la práctica." }] },
-        { id: "puerta", etiqueta: "Ir al planetario con Valentina", zona: [91.5, 36, 8, 50], salida: true,
+        { id: "puerta", etiqueta: "Ir al planetario con Valentina", en: [8, 7], pisar: true,
           si: { bandera: "c0-desperto" },
           acciones: [{ ir: "c0-planetario" }] }
       ]
@@ -82,20 +134,36 @@ DATOS.capitulos.cap0 = {
 
     "c0-sueno": {
       nombre: "La cúpula… ¿o no?",
-      fondo: "c0-sueno",
+      mapa: {
+        modo: "sueno",
+        terreno: [
+          "WWWWWWWWWWW",
+          "wwwwwwwwwww",
+          "zzzzzzzzzzz",
+          "zzzzzzzzzzz",
+          "zzzzzzzzzzz",
+          "zzzzzzzzzzz",
+          "zzzzzzzzzzz",
+          "zzzzzzzzzzz"
+        ],
+        objetos: [
+          ["espejo", 2, 0], ["pizarra-sueno", 8, 1], ["telescopio", 4, 2], ["reloj", 1, 4]
+        ],
+        inicio: [5, 6, "arriba"]
+      },
       alEntrar: [
         { si: { noBandera: "c0-sueno-visto" }, entonces: [{ dialogo: "c0-sueno-inicio" }] }
       ],
       hotspots: [
-        { id: "manos", etiqueta: "Pellizcarte", zona: [38, 86, 24, 14],
+        { id: "manos", etiqueta: "Espejo (pellizcarte)", en: [2, 1],
           acciones: [{ dialogo: "c0-pellizco" }] },
-        { id: "reloj", etiqueta: "Reloj", zona: [14, 11, 10, 17],
+        { id: "reloj", etiqueta: "Reloj flotante", en: [1, 4],
           acciones: [{ dialogo: "c0-reloj" }] },
-        { id: "collao", etiqueta: "Dra. Collao (¿?)", zona: [61, 40, 11.5, 45],
+        { id: "collao", etiqueta: "Dra. Collao (¿?)", en: [8, 4], sprite: "collao", mira: "izq",
           acciones: [{ dialogo: "c0-collao-sueno" }] },
-        { id: "pizarra", etiqueta: "Pizarra", zona: [77, 21, 19.5, 31],
+        { id: "pizarra", etiqueta: "Pizarra", en: [8, 1, 2, 1],
           acciones: [{ dialogo: "c0-pizarra-sueno" }] },
-        { id: "despertar", etiqueta: "Una luz muy brillante", zona: [44, 1, 12, 19],
+        { id: "despertar", etiqueta: "Una luz muy brillante", en: [6, 1], sprite: "luz",
           si: { bandera: ["c0-p-pellizco", "c0-p-reloj", "c0-p-collao"] },
           acciones: [
             { dialogo: "c0-despertando" },
@@ -107,19 +175,39 @@ DATOS.capitulos.cap0 = {
 
     "c0-planetario": {
       nombre: "Planetario",
-      fondo: "planetario",
+      mapa: {
+        modo: "oscuro",
+        tinte: "#c8c4f0",
+        terreno: [
+          "sssssssssssss",
+          "sssssssssssss",
+          "kkkkkkkkkkkkk",
+          "kkkkkkkkkkkkk",
+          "kkkkkkkkkkkkk",
+          "kkkkkkkkkkkkk",
+          "kkkkkkkkkkkkk",
+          "kkkkkkkkkkkkk",
+          "kkkkkkkkkkkkk"
+        ],
+        objetos: [
+          ["proyector", 5, 3],
+          ["butaca", 1, 6], ["butaca", 2, 6], ["butaca", 3, 6], ["butaca", 9, 6], ["butaca", 10, 6], ["butaca", 11, 6],
+          ["butaca", 1, 7], ["butaca", 2, 7], ["butaca", 3, 7], ["butaca", 9, 7], ["butaca", 10, 7], ["butaca", 11, 7]
+        ],
+        inicio: [6, 8, "arriba"]
+      },
       alEntrar: [
         { si: { noBandera: "c0-proyeccion" }, entonces: [{ dialogo: "c0-planetario-intro" }] }
       ],
       hotspots: [
-        { id: "cielo", etiqueta: "Cielo proyectado", zona: [22, 3, 56, 30],
+        { id: "cielo", etiqueta: "Cielo proyectado", en: [0, 0, 13, 2],
           acciones: [{ dialogo: "c0-cielo-proyectado" }] },
-        { id: "proyector", etiqueta: "Proyector de estrellas", zona: [41.5, 51, 17, 36],
+        { id: "proyector", etiqueta: "Proyector de estrellas", en: [5, 3, 2, 2],
           acciones: [{ dialogo: "c0-proyector" }] },
-        { id: "valentina", etiqueta: "Valentina", zona: [67, 44, 10.5, 50],
+        { id: "valentina", etiqueta: "Valentina", en: [8, 4], sprite: "valentina", mira: "izq",
           acciones: [{ dialogo: "c0-valentina" }] },
 
-        { id: "descartes", etiqueta: "Figura luminosa (eco de Descartes)", zona: [17.5, 40, 14, 55],
+        { id: "descartes", etiqueta: "Figura luminosa (eco de Descartes)", en: [2, 3], sprite: "descartes",
           si: { bandera: "c0-proyeccion", noBandera: "c0-cogito" },
           acciones: [
             { dialogo: "c0-descartes-1" },
@@ -127,11 +215,11 @@ DATOS.capitulos.cap0 = {
             { poner: "c0-cogito", desbloquear: { cuaderno: ["genio-maligno", "cogito"], glosario: ["cogito", "escepticismo", "racionalismo"] } },
             { dialogo: "c0-descartes-2" }
           ] },
-        { id: "descartes", etiqueta: "Eco de René Descartes", zona: [17.5, 40, 14, 55],
+        { id: "descartes", etiqueta: "Eco de René Descartes", en: [2, 3], sprite: "descartes",
           si: { bandera: "c0-cogito" },
           acciones: [{ dialogo: "c0-descartes-despues" }] },
 
-        { id: "hume", etiqueta: "Eco de David Hume", zona: [80.5, 40, 14, 55],
+        { id: "hume", etiqueta: "Eco de David Hume", en: [10, 3], sprite: "hume",
           si: { bandera: "c0-cogito", noBandera: "c0-ideas" },
           acciones: [
             { dialogo: "c0-hume-1" },
@@ -145,7 +233,7 @@ DATOS.capitulos.cap0 = {
             { poner: "c0-fin" },
             { finCapitulo: true }
           ] },
-        { id: "hume", etiqueta: "Eco de David Hume", zona: [80.5, 40, 14, 55],
+        { id: "hume", etiqueta: "Eco de David Hume", en: [10, 3], sprite: "hume",
           si: { bandera: "c0-ideas", noBandera: "c0-horquilla" },
           acciones: [
             { dialogo: "c0-hume-retomar" },
@@ -156,10 +244,10 @@ DATOS.capitulos.cap0 = {
             { poner: "c0-fin" },
             { finCapitulo: true }
           ] },
-        { id: "hume", etiqueta: "Eco de David Hume", zona: [80.5, 40, 14, 55],
+        { id: "hume", etiqueta: "Eco de David Hume", en: [10, 3], sprite: "hume",
           si: { bandera: "c0-horquilla", noBandera: "c0-fin" },
           acciones: [{ dialogo: "c0-hume-reflexion" }, { evaluacion: "cap0" }, { poner: "c0-fin" }, { finCapitulo: true }] },
-        { id: "hume", etiqueta: "Eco de David Hume", zona: [80.5, 40, 14, 55],
+        { id: "hume", etiqueta: "Eco de David Hume", en: [10, 3], sprite: "hume",
           si: { bandera: "c0-fin" },
           acciones: [{ dialogo: "c0-hume-fin" }, { finCapitulo: true }] }
       ]
@@ -172,7 +260,7 @@ DATOS.capitulos.cap0 = {
       { texto: "Atardecer en el desierto de Atacama. La camioneta de Don Ramiro se detiene a un costado del camino. Allá arriba, en la cima del cerro, se ve la cúpula del **Observatorio Alto Tamarugo**." },
       { quien: "ramiro", texto: "Paré para que mire el paisaje, {nombre}. La primera vez hay que verlo con calma. Yo soy Ramiro, el cuidador." },
       { quien: "ramiro", texto: "La Dra. Collao llega mañana. Hoy le toca instalarse y descansar, que las noches acá son largas." },
-      { texto: "**Consejo:** pulsa las zonas de la escena para interactuar. Con la tecla **R** (o el botón «Resaltar zonas») verás todo lo que se puede explorar. Nada tiene tiempo límite.",
+      { texto: "**Consejo:** camina con las **flechas** (o W A S D) y presiona **A** (Enter o Espacio) frente a algo o alguien para interactuar. También puedes hacer clic donde quieras ir. Con la tecla **R** verás los lugares importantes. Nada tiene tiempo límite.",
         acciones: [{ poner: "c0-llegada" }] }
     ],
     "c0-espejismo": [
@@ -197,6 +285,9 @@ DATOS.capitulos.cap0 = {
     "c0-ramiro-camino": [
       { si: { bandera: ["c0-espejismo", "c0-luna"] }, quien: "ramiro", texto: "¿Vio? El desierto es bien engañador. ¿Vamos subiendo? El observatorio está en la cima.", ir: "fin" },
       { quien: "ramiro", texto: "Mire con calma: el camino, el cielo… Acá la vista le hace trampas a uno." }
+    ],
+    "c0-letrero": [
+      { texto: "«OBSERVATORIO ALTO TAMARUGO ↑». Debajo, alguien escribió con plumón: «Mire el cielo con calma»." }
     ],
     "c0-todavia-no": [
       { quien: "ramiro", texto: "Espérese un poquito, que todavía no ha mirado nada. Fíjese en el camino y en el cielo." }
@@ -246,7 +337,7 @@ DATOS.capitulos.cap0 = {
         acciones: [{ poner: "c0-sueno-visto" }] }
     ],
     "c0-pellizco": [
-      { texto: "Te pellizcas el brazo. ¡Auch! Duele de verdad." },
+      { texto: "Frente al espejo, decides hacer la prueba más conocida. Te pellizcas el brazo. ¡Auch! Duele de verdad." },
       { texto: "Pero… ¿nunca has soñado que algo te dolía, que corrías, que te caías? El dolor también se puede soñar.",
         acciones: [{ poner: "c0-p-pellizco" }] }
     ],

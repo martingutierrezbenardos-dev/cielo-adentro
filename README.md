@@ -1,6 +1,6 @@
 # Cielo Adentro
 
-Aventura gráfica educativa (*point and click*) de **filosofía de la ciencia** para 3° y 4° medio.
+Aventura educativa de **filosofía de la ciencia** para 3° y 4° medio, al estilo de los RPG de Game Boy Color: caminas por mapas en pixel art, conversas con los personajes y enfrentas **duelos filosóficos** con pantalla de combate.
 Quien juega es estudiante en práctica en el Observatorio Alto Tamarugo (ficticio), en el desierto de Atacama, donde fenómenos extraños obligan al equipo a preguntarse cómo sabe la ciencia lo que sabe.
 
 **Jugar en línea:** https://martingutierrezbenardos-dev.github.io/cielo-adentro/
@@ -11,8 +11,8 @@ Quien juega es estudiante en práctica en el Observatorio Alto Tamarugo (fictici
 
 | # | Capítulo | Conceptos | Puzle central |
 |---|----------|-----------|---------------|
-| 0 | La duda y la experiencia | Duda metódica, argumento del sueño, genio maligno, cogito; impresiones e ideas, principio de copia, horquilla de Hume; racionalismo y empirismo | «La criba de la duda» (aplicar los tres niveles de duda de Descartes a las propias creencias), «Rastrear ideas» y «La horquilla de Hume» |
-| 1 | La inducción | Generalización universal, inducción vs. deducción, contraejemplo, asimetría, falibilismo; la gallina de Russell | Registrar observaciones, formular una ley y enfrentar un contraejemplo (una nova) en «La balanza de la certeza» |
+| 0 | La duda y la experiencia | Duda metódica, argumento del sueño, genio maligno, cogito; impresiones e ideas, principio de copia, horquilla de Hume; racionalismo y empirismo | Duelo contra el eco de Descartes, «La criba de la duda»: tus creencias son tu equipo y caen ante los tres niveles de duda. Duelos contra el eco de Hume: «Rastrear ideas» y «La horquilla de Hume» |
+| 1 | La inducción | Generalización universal, inducción vs. deducción, contraejemplo, asimetría, falibilismo; la gallina de Russell | Registrar observaciones, formular una ley y el duelo «La balanza de la certeza»: tu ley contra EL CASO SIGUIENTE, que ninguna confirmación derrota y un solo contraejemplo (S-12) gana |
 | 2 | Hume y el problema de la inducción | Uniformidad de la naturaleza, circularidad, a priori / a posteriori, conjunción constante, costumbre | *(en desarrollo)* |
 | 3 | Popper: falsacionismo y demarcación | Asimetría lógica, modus tollens, conjeturas y refutaciones, demarcación, Duhem-Quine | *(en desarrollo)* |
 | 4 | Kuhn: paradigmas y revoluciones | Ciencia normal, anomalía, crisis, revolución, gestalt, inconmensurabilidad, valores | *(en desarrollo)* |
@@ -40,7 +40,7 @@ Todo el contenido está en la carpeta `datos/`. Son archivos de texto que puedes
 | Archivo | Qué contiene |
 |---------|--------------|
 | `datos/config.js` | Título, **clave del modo docente**, textos de la interfaz, personajes y objetos |
-| `datos/cap0.js`, `datos/cap1.js` (y `cap2.js`…) | Escenas, zonas clicables, diálogos, observaciones y puzles de cada capítulo |
+| `datos/cap0.js`, `datos/cap1.js` (y `cap2.js`…) | Mapas, lugares y personajes, diálogos, observaciones y puzles de cada capítulo |
 | `datos/cuaderno.js` | Entradas del cuaderno de campo (concepto, autor, obra, ejemplo) |
 | `datos/glosario.js` | Términos del glosario |
 | `datos/evaluacion.js` | Preguntas de reflexión y de opción múltiple de cada capítulo |
@@ -74,42 +74,91 @@ Un diálogo es una lista de líneas:
 - `ir` salta a la línea con ese `id`; `"fin"` termina el diálogo.
 - `si` muestra la línea solo si se cumple una condición (ver abajo).
 
-### Zonas clicables (hotspots) y condiciones
-```js
-{ id: "pizarra", etiqueta: "Pizarra de leyes", zona: [77, 21, 19.5, 31],
-  si: { bandera: "c1-ley" },
-  acciones: [ { dialogo: "c1-pizarra-ver" } ] }
-```
-- `zona`: `[x, y, ancho, alto]` en porcentaje del escenario.
-- Condiciones (`si`): `bandera`, `noBandera`, `tiene` (objeto), `noTiene`, `registrosMin`, `registrosMenos`, `registrado`, `noRegistrado`.
-- Acciones: `dialogo`, `ir` (a otra escena), `dar`/`quitar` (objetos), `poner`/`sacar` (banderas), `registrar` (observación), `puzle`, `desbloquear` (cuaderno/glosario), `mensaje`, `evaluacion`, `finCapitulo`.
+### Mapas y lugares (hotspots) y condiciones
+Cada escena es un mapa de baldosas de 16×16 píxeles. La pantalla muestra 15×10 baldosas y la cámara sigue a quien juega.
 
-### Puzles
+```js
+"c0-pieza": {
+  nombre: "Tu pieza en la residencia",
+  mapa: {
+    modo: "madera",              // estilo de muros/cielo: noche, atardecer, sueno, metal, oscuro, madera
+    tinte: "#ffe4cc",            // (opcional) tiñe la escena; también [{ si: {...}, color: "..." }]
+    terreno: [                   // una letra por baldosa (ver leyenda)
+      "WWWWWWWWWW",
+      "wwwwwwwwww",
+      "oooooooooo",
+      "oooooooodo"
+    ],
+    objetos: [ ["cama", 1, 2], ["escritorio", 5, 2], ["pizarra-ley", 9, 1, { bandera: "c1-ley" }] ],
+    inicio: [8, 6, "arriba"],                     // dónde aparece quien juega
+    desde: { "c0-sueno": [2, 3, "abajo"] }        // dónde aparece según la escena de la que viene
+  },
+  hotspots: [
+    { id: "libro", etiqueta: "Libro con papelitos", en: [5, 2], acciones: [{ dialogo: "c0-libro" }] },
+    { id: "ramiro", etiqueta: "Don Ramiro", en: [7, 7], sprite: "ramiro", mira: "izq", acciones: [...] },
+    { id: "puerta", etiqueta: "Puerta", en: [8, 3], pisar: true, acciones: [{ ir: "c0-planetario" }] }
+  ]
+}
+```
+- `en`: `[x, y]` o `[x, y, ancho, alto]` en baldosas (la esquina superior izquierda es `[0, 0]`). Se interactúa mirando hacia el lugar y presionando **A**. A través de mesas, escritorios y pircas también se puede hablar.
+- `sprite`: hace aparecer un personaje en ese lugar (`tu`, `collao`, `ramiro`, `valentina`, `descartes`, `hume`, `clotilde`) o un objeto animado (`luz`). Los personajes se dan vuelta para mirar a quien les habla.
+- `pisar: true`: la acción ocurre al caminar encima (puertas, salidas). Si después de las acciones se sigue en la misma escena (por ejemplo, «todavía no»), quien juega retrocede un paso.
+- Condiciones (`si`): `bandera`, `noBandera`, `tiene` (objeto), `noTiene`, `registrosMin`, `registrosMenos`, `registrado`, `noRegistrado`, `alguna`, `no`.
+- Acciones: `dialogo`, `ir` (a otra escena), `dar`/`quitar` (objetos), `poner`/`sacar` (banderas), `registrar` (observación), `puzle`, `desbloquear` (cuaderno/glosario), `mensaje`, `evaluacion`, `finCapitulo`.
+- `usar: { "llave-archivo": [ ...acciones ] }`: lo que pasa si se usa ese objeto desde la mochila mirando hacia este lugar.
+
+**Leyenda del terreno** (`js/pixel/tiles.js`):
+
+| Letra | Exteriores | Letra | Interiores |
+|---|---|---|---|
+| `.` `,` | arena (con piedritas o coirón) | `W` `w` | muro alto / muro bajo |
+| `=` `-` | asfalto / con línea | `o` `p` `k` | piso de madera / metálico / oscuro |
+| `:` `t` | tierra / tierra del patio | `z` | piso del sueño |
+| `^` `#` | roca / pared de roca | `s` | cúpula con estrellas |
+| `_` | pirca (se puede hablar por encima) | `r` | alfombra |
+| `a` `b` `c` `m` | cielo alto, medio, horizonte, cerros | `d` `D` | felpudo de salida / puerta abierta |
+| `f` `A` | cerca de palos / muro de adobe | `x` | vacío |
+
+Objetos de decorado disponibles: `cama`, `escritorio`, `mesa`, `libro`, `vaso`, `ventana`, `cuadro`, `planta`, `silla`, `estante`, `telescopio`, `consola`, `cuaderno-rojo`, `pizarra`, `pizarra-ley`, `pizarra-tachada`, `pizarra-sueno`, `puerta-cerrada`, `archivador`, `computador`, `bitacora`, `proyector`, `butaca`, `reloj`, `espejo`, `luz`, `cactus`, `piedra`, `letrero`, `camioneta`, `charco`, `luna`, `observatorio-lejos`, `cupula`, `casa`, `campo-salar`, `gallinero`, `fogon`, `ventana-adobe`, `tablero-estrellas`, `gallina-blanca`, `gallina-cafe`.
+
+### Puzles y duelos
 Los textos, opciones, retroalimentación y **pistas (3 niveles)** de cada puzle están en la sección `puzles` del archivo del capítulo. En las opciones, `correcta: true` marca la respuesta correcta y `retro` es la explicación que se muestra.
 
 Tipos de puzle reutilizables:
-- `eleccion`: una o varias preguntas con opciones y retroalimentación.
-- `clasificar`: asignar cada elemento a una categoría (`correcta` = id de la categoría; `retroMal` explica cada error posible). Se usa en «Rastrear ideas» y «La horquilla de Hume».
-- `criba`: niveles de duda sucesivos; cada creencia indica en qué nivel cae (`caeEn`: 0, 1, 2 o `null` si resiste todo).
-- `balanza`: el medidor de confirmaciones del Capítulo 1.
+- `eleccion`: una o varias preguntas con opciones y retroalimentación (ventana de menú).
+- `clasificar` (**duelo**): el rival plantea cada elemento y los «movimientos» son las categorías (`correcta` = id de la categoría; `retroMal` explica cada error posible). Se usa en «Rastrear ideas» y «La horquilla de Hume».
+- `criba` (**duelo**): niveles de duda sucesivos; las creencias son tu equipo y cada una indica en qué nivel cae (`caeEn`: 0, 1, 2 o `null` si resiste todo).
+- `balanza` (**duelo**): tu ley contra EL CASO SIGUIENTE (Capítulo 1).
+
+En los duelos no se pierde: un error explica por qué y deja volver a intentar. «Salir del duelo» (Esc) guarda el avance. Los nombres y frases del rival se pueden cambiar con un bloque opcional `duelo` dentro del puzle, por ejemplo:
+
+```js
+duelo: { rival: "descartes", nombreRival: "ECO DE DESCARTES", intro: "¡El {rival} te desafía a un duelo de dudas!", usa: "¡{rival} usa {ataque}!" }
+```
 
 ## Para el aula
 
 - **Modo docente** (botón en la pantalla de inicio o en el menú): saltar a cualquier capítulo, ver soluciones, guía con objetivos, preguntas de discusión y errores conceptuales frecuentes, y progreso de la partida abierta.
 - **Respuestas de estudiantes:** al final de cada capítulo hay 2–3 preguntas abiertas y 3 de comprobación. En «Menú → Mis respuestas» o en la pantalla final se descargan como `.txt` con nombre y curso.
-- **Accesibilidad:** sin límite de tiempo; todo se puede jugar con teclado (Tab, Enter, **R** para resaltar zonas, **C** cuaderno, **G** glosario, **M** menú, **Esc** cerrar); tamaño de texto ajustable (4 niveles); modo de alto contraste; reducir animaciones.
+- **Controles:** flechas o W A S D para caminar; **A** = Enter, Espacio o Z (hablar, mirar, avanzar texto); clic o toque en el mapa para caminar hasta ahí; **R** muestra los lugares importantes (❗ nuevo, ➜ salida); **I** mochila; **C** cuaderno; **G** glosario; **M** menú; **Esc** cerrar. En celulares y tablets aparecen una cruceta y botones A/B en pantalla.
+- **Accesibilidad:** sin límite de tiempo; todo se puede jugar con teclado; con **Tab** se recorre una lista de los lugares y personas de la escena (Enter camina hasta ahí e interactúa), pensada también para lectores de pantalla; el texto de los diálogos se anuncia completo; tamaño de texto ajustable (4 niveles); modo de alto contraste; «reducir animaciones» desactiva el texto letra por letra y las animaciones.
 
 ## Estructura técnica
 
-HTML + CSS + JavaScript sin frameworks. Scripts clásicos (no módulos) para que funcione al abrir `index.html` directamente.
+HTML + CSS + JavaScript sin frameworks, con un `<canvas>` de 240×160 píxeles escalado. Scripts clásicos (no módulos) para que funcione al abrir `index.html` directamente.
 
 ```
 index.html
-css/estilos.css            paleta y estilos
-js/motor/                  estado, guardado, escenas, diálogos, inventario, interfaz, puzles, evaluación, exportación, modo docente
-js/puzles/                 mecánicas específicas de cada puzle
-js/arte/                   ilustraciones SVG originales (escenarios, personajes, objetos)
+css/estilos.css            estética Game Boy Color (cuadros de texto, menús, duelos)
+js/pixel/                  pixel art generado en el navegador: paleta, personajes, baldosas y decorados
+js/motor/                  estado, guardado, mundo (mapas, movimiento, cámara), diálogos, mochila,
+                           interfaz, puzles, duelos, evaluación, exportación, modo docente
+js/puzles/                 mecánicas de cada puzle (criba, clasificar y balanza se juegan como duelos)
 js/juego.js                arranque
-datos/                     todo el contenido editable
-tests/                     servidor local de prueba y lista de verificación
+datos/                     todo el contenido editable (incluye los mapas)
+tests/                     servidor local, lista de verificación y recorrido automático
 ```
+
+Todo el arte es original y se dibuja con código (no hay imágenes externas). La fuente pixelada de los títulos («Press Start 2P») se carga desde Google Fonts; sin internet se usa una fuente del sistema y el juego funciona igual.
+
+**Recorrido automático (opcional):** con Node.js y Playwright instalados, `node tests/servidor.js` y luego `node tests/recorrido-automatico.js` juega los capítulos 0 y 1 completos (incluidos los duelos y la evaluación) y avisa si algo falla.
