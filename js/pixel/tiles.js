@@ -615,11 +615,11 @@
   var OBJ = [["campo-salar", 10, 1], ["cupula", 2, 5], ["casa", 9, 6], ["cactus", 7, 7], ["cactus", 14, 8], ["piedra", 0, 9]];
   P.portada = function (ctx, frame) {
     FILAS.forEach(function (f, y) {
-      for (var x = 0; x < f.length; x++) ctx.drawImage(P.terrenoXY(f[x], x, y, frame, "noche"), x * T, y * T);
+      for (var x = 0; x < f.length; x++) P.dib(ctx, P.terrenoXY(f[x], x, y, frame, "noche"), x * T, y * T);
     });
     OBJ.forEach(function (o) {
       var im = P.imagenDecor(o[0], frame, {});
-      if (im) ctx.drawImage(im, o[1] * T, o[2] * T);
+      if (im) P.dib(ctx, im, o[1] * T, o[2] * T);
     });
   };
 })(window.CA);

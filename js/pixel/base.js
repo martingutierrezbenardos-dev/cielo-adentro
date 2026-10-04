@@ -135,3 +135,52 @@ window.CA = window.CA || {};
     return l.c.toDataURL();
   };
 })(window.CA);
+
+/* Más píxeles: cada imagen se amplía al doble con el algoritmo Scale2x (EPX), que suaviza
+   diagonales y bordes sin perder el aspecto pixelado. Se dibuja con P.dib(), que coloca la
+   versión ampliada en el lugar y tamaño de la original (el lienzo usa una escala ×2). */
+(function (CA) {
+  "use strict";
+  var P = CA.Pixel;
+  var hd = typeof WeakMap !== "undefined" ? new WeakMap() : null;
+
+  P.escala2x = function (lienzo) {
+    var w = lienzo.width, h = lienzo.height;
+    var src = lienzo.getContext("2d").getImageData(0, 0, w, h);
+    var s = new Uint32Array(src.data.buffer);
+    var out = P.lienzo(w * 2, h * 2);
+    var dst = out.x.createImageData(w * 2, h * 2);
+    var d = new Uint32Array(dst.data.buffer);
+    var W2 = w * 2;
+    for (var y = 0; y < h; y++) {
+      for (var x = 0; x < w; x++) {
+        var p = s[y * w + x];
+        var A = y > 0 ? s[(y - 1) * w + x] : p;
+        var B = x < w - 1 ? s[y * w + x + 1] : p;
+        var C = x > 0 ? s[y * w + x - 1] : p;
+        var D = y < h - 1 ? s[(y + 1) * w + x] : p;
+        var i = (y * 2) * W2 + x * 2;
+        d[i] = (C === A && C !== D && A !== B) ? A : p;
+        d[i + 1] = (A === B && A !== C && B !== D) ? B : p;
+        d[i + W2] = (D === C && D !== B && C !== A) ? C : p;
+        d[i + W2 + 1] = (B === D && B !== A && D !== C) ? D : p;
+      }
+    }
+    out.x.putImageData(dst, 0, 0);
+    return out.c;
+  };
+
+  P.hd = function (img) {
+    if (!img) return img;
+    if (!hd) return img;
+    var r = hd.get(img);
+    if (!r) { r = P.escala2x(img); hd.set(img, r); }
+    return r;
+  };
+
+  // Dibuja la versión ampliada en coordenadas lógicas (w, h opcionales: tamaño lógico).
+  P.dib = function (ctx, img, x, y, w, h) {
+    if (!img) return;
+    ctx.drawImage(P.hd(img), x, y, w || img.width, h || img.height);
+  };
+})(window.CA);

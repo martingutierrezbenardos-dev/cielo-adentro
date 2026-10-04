@@ -122,6 +122,7 @@ let n = 0;
     await resolver();
     await foto('camino');
     await paso('Charco en el camino', 'charco');
+    await paso('Charco en el camino');     // el espejismo se aleja: hay que seguirlo
     await paso('Subir al observatorio');   // todavía no: debe retroceder
     await paso('La Luna');
     await paso('Letrero');

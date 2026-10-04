@@ -102,6 +102,7 @@
   function imagenDe(spec, frente) {
     if (!spec) return null;
     if (spec.icono) return imagenIcono(spec.icono, spec.tono);
+    if (spec.decor) return P.imagenDecor(spec.decor, 0, {});
     return P.personaje(spec.sprite, frente ? "abajo" : "arriba", 0);
   }
 
@@ -153,7 +154,7 @@
       modal.el.parentNode.classList.add("combate-fondo");
       var raiz = CA.UI.crear("div", "combate");
       raiz.innerHTML =
-        '<div class="combate-escena"><canvas width="' + ANCHO + '" height="' + ALTO + '" aria-hidden="true"></canvas>' +
+        '<div class="combate-escena"><canvas width="' + ANCHO * 2 + '" height="' + ALTO * 2 + '" aria-hidden="true"></canvas>' +
         '<div class="combate-info rival" aria-live="polite"></div><div class="combate-info tuyo" aria-live="polite"></div></div>' +
         '<div class="combate-abajo"><div class="combate-texto" aria-live="polite"></div><div class="combate-menu" role="group" hidden></div></div>';
       ctx.cuerpo.appendChild(raiz);
@@ -168,8 +169,9 @@
       var fondo = FONDOS[op.fondo] || FONDOS.planetario;
 
       var lados = {
-        rival: { spec: op.rival, x: 156, y: 4, dx: 0, dy: 0, visible: true, brillo: 0 },
-        tuyo: { spec: op.tuyo, x: 30, y: 50, dx: 0, dy: 0, visible: true, brillo: 0 }
+        // cx: centro de la plataforma; base: dónde se apoya la figura
+        rival: { spec: op.rival, cx: 180, base: 52, dx: 0, dy: 0, visible: true, brillo: 0 },
+        tuyo: { spec: op.tuyo, cx: 54, base: 98, dx: 0, dy: 0, visible: true, brillo: 0 }
       };
       var vivo = true;
       var t0 = performance.now();
@@ -179,6 +181,8 @@
         var t = performance.now() - t0;
         var anim = animacionesActivas();
         // cielo en franjas
+        g.setTransform(2, 0, 0, 2, 0, 0);
+        g.imageSmoothingEnabled = false;
         g.fillStyle = fondo.cielo[0]; g.fillRect(0, 0, ANCHO, ALTO);
         g.fillStyle = fondo.cielo[1]; g.fillRect(0, 36, ANCHO, 30);
         g.fillStyle = fondo.suelo; g.fillRect(0, 66, ANCHO, ALTO - 66);
@@ -202,15 +206,18 @@
           var im = imagenDe(s.spec, lado === "rival");
           if (!im) return;
           var resp = anim && s.dy === 0 ? Math.round(Math.sin(t / 500 + (lado === "rival" ? 0 : 2)) * 1) : 0;
-          var x = s.x + s.dx, y = s.y + s.dy + resp;
+          // Las figuras de 16 px se ven ×3; las más grandes (Luna, charco…) a menor escala.
+          var e = Math.max(1, Math.min(ESC, Math.floor(48 / Math.max(im.width, im.height))));
+          var iw = im.width * e, ih = im.height * e;
+          var x = s.cx - iw / 2 + s.dx, y = s.base - ih + s.dy + resp;
           g.save();
           g.beginPath(); g.rect(0, 0, ANCHO, lado === "tuyo" ? ALTO : 58); g.clip();
-          g.drawImage(im, x, y, im.width * ESC, im.height * ESC);
+          P.dib(g, im, x, y, iw, ih);
           if (s.brillo > 0) {
             g.globalAlpha = s.brillo;
             g.globalCompositeOperation = "source-atop";
             g.fillStyle = C.blanco;
-            g.fillRect(x, y, im.width * ESC, im.height * ESC);
+            g.fillRect(x, y, iw, ih);
           }
           g.restore();
         });

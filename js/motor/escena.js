@@ -116,13 +116,29 @@
   }
 
   /* ---------- Actores (personajes con sprite) ---------- */
+  // Si un personaje u objeto cambia de lugar (otra variante del mismo id), se desliza hasta allí.
+  var posActor = {};
   function actualizarActores() {
     actores = [];
     hotspotsVisibles().forEach(function (hs) {
       if (!hs.sprite) return;
       var a = area(hs);
-      actores.push({ hs: hs, id: hs.id, sprite: hs.sprite, x: a.x, y: a.y, dir: dirActor[hs.id] || hs.mira || "abajo" });
+      var act = { hs: hs, id: hs.id, sprite: hs.sprite, x: a.x, y: a.y, dir: dirActor[hs.id] || hs.mira || "abajo" };
+      var prev = posActor[hs.id];
+      if (prev && (prev.x !== a.x || prev.y !== a.y)) posActor[hs.id] = { x: a.x, y: a.y, ox: prev.vx != null ? prev.vx : prev.x, oy: prev.vy != null ? prev.vy : prev.y, t0: tiempo };
+      else if (!prev) posActor[hs.id] = { x: a.x, y: a.y, ox: a.x, oy: a.y, t0: -1e9 };
+      actores.push(act);
     });
+  }
+  // Posición visual (en baldosas) de un actor, con el deslizamiento en curso.
+  function posVisualActor(a) {
+    var p = posActor[a.id];
+    if (!p || !animacionesActivas()) return { x: a.x, y: a.y };
+    var k = Math.min(1, (tiempo - p.t0) / 900);
+    k = k * k * (3 - 2 * k);
+    var r = { x: p.ox + (a.x - p.ox) * k, y: p.oy + (a.y - p.oy) * k };
+    p.vx = r.x; p.vy = r.y;
+    return r;
   }
 
   /* ---------- Zona frente al jugador ---------- */
@@ -353,8 +369,8 @@
   function clicEnPantalla(ev) {
     if (!puedeMoverse() && !(jug.moviendo)) return;
     var r = lienzo.getBoundingClientRect();
-    var px = (ev.clientX - r.left) / r.width * lienzo.width;
-    var py = (ev.clientY - r.top) / r.height * lienzo.height;
+    var px = (ev.clientX - r.left) / r.width * P.ANCHO * T;
+    var py = (ev.clientY - r.top) / r.height * P.ALTO * T;
     var cam = camara();
     var tx = Math.floor((px + cam.x) / T), ty = Math.floor((py + cam.y) / T);
     if (tx === jug.x && ty === jug.y) { pedidoInteraccion = true; return; }
@@ -384,7 +400,7 @@
       x = (jug.moviendo.ox + (jug.x - jug.moviendo.ox) * k) * T;
       y = (jug.moviendo.oy + (jug.y - jug.moviendo.oy) * k) * T;
     }
-    return { x: Math.round(x), y: Math.round(y) };
+    return { x: Math.round(x * 2) / 2, y: Math.round(y * 2) / 2 };
   }
 
   function camara() {
@@ -393,7 +409,7 @@
     var mw = mapa.w * T, mh = mapa.h * T;
     var cx = mw <= W ? -(W - mw) / 2 : Math.max(0, Math.min(mw - W, pv.x + T / 2 - W / 2));
     var cy = mh <= H ? -(H - mh) / 2 : Math.max(0, Math.min(mh - H, pv.y + T / 2 - H / 2));
-    return { x: Math.round(cx), y: Math.round(cy) };
+    return { x: Math.round(cx * 2) / 2, y: Math.round(cy * 2) / 2 };
   }
 
   function frameJugador() {
@@ -404,7 +420,9 @@
 
   function dibujar() {
     if (!ctx) return;
-    var W = lienzo.width, H = lienzo.height;
+    var W = P.ANCHO * T, H = P.ALTO * T;
+    ctx.setTransform(2, 0, 0, 2, 0, 0);
+    ctx.imageSmoothingEnabled = false;
     ctx.fillStyle = P.col.negro;
     ctx.fillRect(0, 0, W, H);
     if (!mapa) return;
@@ -419,7 +437,7 @@
     for (var y = y0; y <= y1; y++) {
       for (var x = x0; x <= x1; x++) {
         var img = P.terrenoXY(letra(x, y), x, y, f2, mapa.modo);
-        if (img) ctx.drawImage(img, x * T - cam.x, y * T - cam.y);
+        if (img) P.dib(ctx, img, x * T - cam.x, y * T - cam.y);
       }
     }
 
@@ -433,20 +451,22 @@
       // Lo que va encima de un mueble (libro, vaso…) se dibuja después del mueble.
       capas.push({ base: o[2] + d.h - 1 + (plano ? 0.05 : 0), dib: function () {
         var im = P.imagenDecor(o[0], d.frames === 4 ? f4 : f2 + (d.frames === 3 ? Math.floor(tiempo / 300) % 3 : 0), est);
-        if (im) ctx.drawImage(im, o[1] * T - cam.x, o[2] * T - cam.y);
+        if (im) P.dib(ctx, im, o[1] * T - cam.x, o[2] * T - cam.y);
       } });
     });
     actores.forEach(function (a) {
-      capas.push({ base: a.y + 0.1, dib: function () {
+      var v = posVisualActor(a);
+      capas.push({ base: v.y + 0.1, dib: function () {
         var flota = P.esEco(a.sprite) && anim ? Math.round(Math.sin(tiempo / 400 + a.x) * 1.5) - 1 : 0;
         var paso = 0;
         if (/^(gallina|clotilde)/.test(a.sprite) && anim) paso = (Math.floor(tiempo / 600 + a.x * 3) % 5 === 0) ? 1 : 0;
+        var vx = Math.round(v.x * T * 2) / 2 - cam.x, vy = Math.round(v.y * T * 2) / 2 - cam.y;
         if (P.esPersonaje(a.sprite)) {
-          sombra(a.x * T - cam.x, a.y * T - cam.y);
-          ctx.drawImage(P.personaje(a.sprite, a.dir, paso), a.x * T - cam.x, a.y * T - cam.y - 2 + flota);
+          sombra(vx, vy);
+          P.dib(ctx, P.personaje(a.sprite, a.dir, paso), vx, vy - 2 + flota);
         } else {
           var im = P.imagenDecor(a.sprite, f4, est);
-          if (im) ctx.drawImage(im, a.x * T - cam.x, a.y * T - cam.y);
+          if (im) P.dib(ctx, im, vx, vy);
         }
       } });
     });
@@ -454,7 +474,7 @@
     capas.push({ base: (pv.y / T) + 0.2, dib: function () {
       sombra(pv.x - cam.x, pv.y - cam.y);
       var salto = jug.moviendo && frameJugador() ? -1 : 0;
-      ctx.drawImage(P.personaje("tu", jug.dir, frameJugador()), pv.x - cam.x, pv.y - cam.y - 2 + salto);
+      P.dib(ctx, P.personaje("tu", jug.dir, frameJugador()), pv.x - cam.x, pv.y - cam.y - 2 + salto);
     } });
     capas.sort(function (a, b) { return a.base - b.base; });
     capas.forEach(function (c) { c.dib(); });
@@ -469,7 +489,26 @@
       ctx.restore();
     }
 
-    // 4. Marcadores de zonas (tecla R)
+    // 4. Ayudas siempre visibles: flechas en las salidas, «!» sobre lo que aún no has
+    //    revisado y un botón «A» sobre lo que tienes enfrente.
+    var bote = anim ? Math.round(Math.sin(tiempo / 180)) : 0;
+    hotspotsVisibles().forEach(function (hs) {
+      var a = area(hs);
+      if (hs.pisar) {
+        flecha(a, dirSalida(hs), cam, anim ? Math.round(Math.sin(tiempo / 160) * 1.5) : 0);
+      } else if (!resaltar && (hs.marca || !CA.estado.visitados[claveVisita(hs)])) {
+        exclamacion(Math.round((a.x + a.w / 2) * T - cam.x), Math.round(a.y * T - cam.y) - 3 + bote);
+      }
+    });
+    if (!jug.moviendo && ocupado === 0 && !CA.Dialogo.abierto()) {
+      var fz = zonaAlFrente();
+      if (fz) {
+        var af = area(fz);
+        botonA(Math.round((af.x + af.w / 2) * T - cam.x), Math.round(af.y * T - cam.y) - (CA.estado.visitados[claveVisita(fz)] || resaltar ? 3 : 14) + bote);
+      }
+    }
+
+    // 5. Marcadores de zonas (tecla R)
     if (resaltar) {
       hotspotsVisibles().forEach(function (hs) {
         var a = area(hs);
@@ -496,6 +535,86 @@
     ctx.fillRect(x + 2, y + 14, 12, 1);
   }
 
+  // Hacia dónde lleva una salida: al borde del mapa más cercano, o hacia arriba si hay un muro encima.
+  function dirSalida(hs) {
+    if (hs.flecha) return hs.flecha;
+    var a = area(hs);
+    if (a.x === 0) return "izq";
+    if (a.x + a.w >= mapa.w) return "der";
+    if (a.y + a.h >= mapa.h) return "abajo";
+    if (a.y === 0) return "arriba";
+    return P.esSolido(letra(a.x, a.y - 1)) || mascaraDecor(a.x, a.y - 1) ? "arriba" : "abajo";
+  }
+
+  // Dibuja un patrón de caracteres centrado en (x, y) por arriba (y = base del dibujo).
+  function patron(filas, x, y, colores, rot) {
+    var h = filas.length, w = filas[0].length;
+    for (var fy = 0; fy < h; fy++) {
+      for (var fx = 0; fx < w; fx++) {
+        var ch = filas[fy][fx];
+        if (ch === "." || !colores[ch]) continue;
+        var rx = fx - (w - 1) / 2, ry = fy - (h - 1) / 2, px = rx, py = ry;
+        if (rot === "abajo") py = -ry;
+        else if (rot === "izq") { px = ry; py = rx; }
+        else if (rot === "der") { px = -ry; py = rx; }
+        ctx.fillStyle = colores[ch];
+        ctx.fillRect(Math.round(x + px - 0.5), Math.round(y + py - 0.5), 1, 1);
+      }
+    }
+  }
+
+  var FLECHA = [
+    "....O....",
+    "...OTO...",
+    "..OTTTO..",
+    ".OTTWTTO.",
+    "OOOTWTOOO",
+    "..OTTTO..",
+    "..OTTTO..",
+    "..OOOOO.."
+  ];
+  // Flecha flotante sobre cada baldosa de una salida, apuntando hacia donde lleva.
+  function flecha(a, dir, cam, mov) {
+    var d = DIRS[dir];
+    for (var x = a.x; x < a.x + a.w; x++) {
+      for (var y = a.y; y < a.y + a.h; y++) {
+        patron(FLECHA, x * T - cam.x + 8 + d[0] * (mov + 1), y * T - cam.y + 8 + d[1] * (mov + 1),
+          { O: P.col.negro, T: P.col.turquesa, W: P.col.blanco }, dir);
+      }
+    }
+  }
+
+  var GLOBO = [
+    ".OOOOOOO.",
+    "OWWWRWWWO",
+    "OWWWRWWWO",
+    "OWWWRWWWO",
+    "OWWWWWWWO",
+    "OWWWRWWWO",
+    ".OOOOOOO.",
+    "...OWO...",
+    "....O...."
+  ];
+  // Globito «!» sobre lo que aún no has revisado (y = punta inferior).
+  function exclamacion(x, y) {
+    patron(GLOBO, x, y - 5, { O: P.col.negro, W: P.col.blanco, R: P.col.rojo });
+  }
+
+  var BOTON_A = [
+    "..OOOOO..",
+    ".ORRRRRO.",
+    "ORRRWRRRO",
+    "ORRWRWRRO",
+    "ORRWWWRRO",
+    "ORRWRWRRO",
+    ".ORRRRRO.",
+    "..OOOOO.."
+  ];
+  // Botón «A» redondo: indica que se puede interactuar con lo que está enfrente.
+  function botonA(x, y) {
+    patron(BOTON_A, x, y - 5, { O: P.col.negro, R: P.col.rojo, W: P.col.blanco });
+  }
+
   function marcador(x, y, tipo) {
     var col = tipo === "salida" ? P.col.turquesa : tipo === "nuevo" ? P.col.ambar : P.col.gris1;
     ctx.fillStyle = P.col.negro;
@@ -510,7 +629,7 @@
 
   function posicionarEtiquetas(cam) {
     if (!elEtiquetas) return;
-    var esc = elEscenario.clientWidth / lienzo.width;
+    var esc = elEscenario.clientWidth / (P.ANCHO * T);
     Array.prototype.forEach.call(elEtiquetas.children, function (el) {
       var hs = el._hs;
       var a = area(hs);
@@ -632,8 +751,8 @@
       elEtiquetas = $("etiquetas");
       elLugar = $("lugar");
       lienzo = $("pantalla");
-      lienzo.width = P.ANCHO * T;
-      lienzo.height = P.ALTO * T;
+      lienzo.width = P.ANCHO * T * 2;   // el doble de píxeles (ver P.dib)
+      lienzo.height = P.ALTO * T * 2;
       ctx = lienzo.getContext("2d");
       ctx.imageSmoothingEnabled = false;
       window.addEventListener("resize", ajustarTamano);
@@ -686,6 +805,7 @@
 
       cargarMapa(id);
       dirActor = {};
+      posActor = {};
       var pos = CA.estado.pos;
       var m = mapa.datos;
       var spawn;

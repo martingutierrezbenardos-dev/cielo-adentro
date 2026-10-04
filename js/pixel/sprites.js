@@ -309,11 +309,11 @@
     if (retratos[id]) return retratos[id];
     var eco = P.esEco(id);
     var spr = P.personaje(id === "gallina" ? "clotilde" : id, "abajo", 0);
-    var l = P.lienzo(20, 20);
+    var l = P.lienzo(40, 40);
     l.x.fillStyle = eco ? C.noche2 : C.crema;
-    l.x.fillRect(0, 0, 20, 20);
-    if (eco) { l.x.fillStyle = C.noche3; l.x.fillRect(2, 2, 16, 16); }
-    l.x.drawImage(spr, 2, 3);
-    return (retratos[id] = P.aURL(l.c, 4));
+    l.x.fillRect(0, 0, 40, 40);
+    if (eco) { l.x.fillStyle = C.noche3; l.x.fillRect(4, 4, 32, 32); }
+    l.x.drawImage(P.hd(spr), 4, 6);
+    return (retratos[id] = P.aURL(l.c, 2));
   };
 })(window.CA);
