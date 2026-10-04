@@ -72,7 +72,7 @@
             ctx.guardar();
             infoTuyo();
             await b.animar("rival", "golpe");
-            await b.decir('<span class="ok">**' + T().dueloEficaz + "**</span> **" + nombreCat(it.correcta) + ".** " + it.retro);
+            await b.decir("[ok]**" + T().dueloEficaz + "**[/ok] **" + nombreCat(it.correcta) + ".** " + it.retro);
             await b.animar("rival", "caer");
             infoRival(null);
             break;
@@ -82,7 +82,7 @@
           ctx.guardar();
           await b.animar("tuyo", "temblar");
           var expl = (it.retroMal && it.retroMal[cat.id]) || cfg.retroMalGenerica || "";
-          await b.decir('<span class="mal">**' + T().dueloNoEficaz + "**</span> " + expl);
+          await b.decir("[mal]**" + T().dueloNoEficaz + "**[/mal] " + expl);
         }
       }
 
