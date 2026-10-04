@@ -50,7 +50,21 @@
       infoTuyo(null);
       await b.animar("rival", "brillo");
       await b.decir((D.usa || "¡{rival} usa {ataque}!").replace("{rival}", nombreRival).replace("{ataque}", nv.titulo.toUpperCase()));
+      // Recuerdos: Descartes trae de vuelta lo que viviste esta noche, uno por uno.
+      if (nv.recuerdos && nv.recuerdos.length) {
+        if (nv.invoca) await b.decir(nv.invoca);
+        for (var k = 0; k < nv.recuerdos.length; k++) {
+          var rc = nv.recuerdos[k];
+          b.sprite("rival", rc.decor ? { decor: rc.decor } : rc.icono ? { icono: rc.icono } : { sprite: rc.sprite });
+          await b.animar("rival", "entrar");
+          await b.animar("rival", "brillo");
+          await b.decir("**¡" + rc.nombre + "!** " + rc.texto);
+        }
+        b.sprite("rival", { sprite: D.rival || "descartes" });
+        await b.animar("rival", "entrar");
+      }
       await b.decir(nv.argumento);
+      if (nv.pregunta) await b.decir(nv.pregunta);
       var lista = enPie(est.nivel);
       for (var i = 0; i < lista.length; i++) {
         var cr = lista[i];
@@ -61,10 +75,10 @@
         infoTuyo(cr);
         await b.animar("tuyo", "entrar");
         for (;;) {
-          var r = await b.menu(E.pregunta, [
+          var r = await b.menu(nv.preguntaMenu || E.pregunta, [
             { html: esc(E.resiste), desc: D.descResiste || "Este argumento no alcanza para dudar de ella." },
             { html: esc(E.cae), desc: D.descCae || "Con este argumento, se puede dudar de ella." }
-          ], "«" + cr.texto + "»\n\n_" + nv.titulo + "_");
+          ], "**" + (nv.preguntaMenu || E.pregunta) + "**\n\n«" + cr.texto + "»");
           var eligeCae = r === 1;
           est.intentos++;
           if (eligeCae === cae) {

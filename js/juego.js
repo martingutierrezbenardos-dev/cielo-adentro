@@ -27,6 +27,7 @@
   // Portada animada (las estrellas titilan) mientras la pantalla de inicio esté visible.
   function dibujarPortada(lienzo) {
     var ctx = lienzo.getContext("2d");
+    ctx.setTransform(2, 0, 0, 2, 0, 0);
     ctx.imageSmoothingEnabled = false;
     var f = 0;
     (function tic() {
@@ -47,7 +48,7 @@
       var guardado = CA.Guardado.cargar();
       var el = $("inicio");
       el.className = "inicio";
-      el.innerHTML = '<div class="inicio-arte" aria-hidden="true"><canvas width="240" height="160"></canvas></div>';
+      el.innerHTML = '<div class="inicio-arte" aria-hidden="true"><canvas width="480" height="320"></canvas></div>';
       dibujarPortada(el.querySelector("canvas"));
       var panel = CA.UI.crear("div", "inicio-panel");
       var hayPartida = guardado && guardado.capitulo;

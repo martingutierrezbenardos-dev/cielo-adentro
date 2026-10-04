@@ -56,7 +56,7 @@ DATOS.capitulos.cap0 = {
         ],
         objetos: [
           ["luna", 2, 2], ["observatorio-lejos", 11, 4], ["camioneta", 3, 8],
-          ["charco", 15, 9], ["letrero", 15, 6], ["cactus", 1, 11], ["cactus", 17, 12],
+          ["letrero", 15, 6], ["cactus", 1, 11], ["cactus", 17, 12],
           ["cactus", 8, 6], ["piedra", 13, 13], ["piedra", 0, 7]
         ],
         inicio: [5, 7, "der"]
@@ -65,7 +65,15 @@ DATOS.capitulos.cap0 = {
         { si: { noBandera: "c0-llegada" }, entonces: [{ dialogo: "c0-llegada" }] }
       ],
       hotspots: [
-        { id: "espejismo", etiqueta: "Charco en el camino", en: [15, 9, 2, 1],
+        // El charco (un espejismo) se aleja cada vez que te acercas.
+        { id: "espejismo", etiqueta: "Charco en el camino", en: [10, 9], sprite: "charco",
+          si: { noBandera: ["c0-charco-1", "c0-espejismo"] },
+          acciones: [{ dialogo: "c0-espejismo-1" }] },
+        { id: "espejismo", etiqueta: "Charco en el camino", en: [15, 9], sprite: "charco", marca: true,
+          si: { bandera: "c0-charco-1", noBandera: "c0-espejismo" },
+          acciones: [{ dialogo: "c0-espejismo-2" }] },
+        { id: "espejismo", etiqueta: "Charco en el camino", en: [18, 9], sprite: "charco",
+          si: { bandera: "c0-espejismo" },
           acciones: [{ dialogo: "c0-espejismo" }] },
         { id: "luna", etiqueta: "La Luna", en: [2, 2, 2, 3],
           acciones: [{ dialogo: "c0-luna" }] },
@@ -263,24 +271,33 @@ DATOS.capitulos.cap0 = {
       { texto: "**Consejo:** camina con las **flechas** (o W A S D) y presiona **A** (Enter o Espacio) frente a algo o alguien para interactuar. También puedes hacer clic donde quieras ir. Con la tecla **R** verás los lugares importantes. Nada tiene tiempo límite.",
         acciones: [{ poner: "c0-llegada" }] }
     ],
+    "c0-espejismo-1": [
+      { texto: "Sobre el asfalto brilla un charco de agua. Hasta refleja el cielo del atardecer." },
+      { quien: "ramiro", texto: "¿Agua? En este camino no llueve hace años. Camine un poco y verá." },
+      { texto: "Das unos pasos hacia el charco… y el charco se corre. Como si te esquivara.",
+        acciones: [{ poner: "c0-charco-1" }] }
+    ],
+    "c0-espejismo-2": [
+      { texto: "Te acercas otra vez. El brillo vuelve a correrse, siempre unos metros más allá. Por más que camines, nunca llegas al agua.",
+        acciones: [{ poner: "c0-espejismo" }] },
+      { texto: "Era un **espejismo**: el aire caliente sobre el asfalto curva la luz que viene del cielo, y el cielo parece reflejado en el suelo." },
+      { texto: "Tus ojos no inventaron la luz: esa luz sí llegaba desde ahí. Lo que falló fue tu juicio: «ahí hay agua»." }
+    ],
     "c0-espejismo": [
-      { si: { noBandera: "c0-espejismo" }, texto: "A lo lejos, sobre el asfalto, brilla un charco de agua. Hasta parece reflejar el cielo." },
-      { si: { noBandera: "c0-espejismo" }, quien: "ramiro", texto: "¿Agua? En este camino no llueve hace años. Camine un poco y verá." },
-      { si: { noBandera: "c0-espejismo" }, texto: "A medida que avanzas, el «charco» retrocede y desaparece. Era un **espejismo**: el aire caliente sobre el asfalto curva la luz que viene del cielo, y el cielo parece reflejado en el suelo." },
-      { si: { noBandera: "c0-espejismo" }, texto: "Tus ojos no inventaron la luz: esa luz sí llegaba desde ahí. Lo que falló fue tu juicio: «ahí hay agua».",
-        acciones: [{ poner: "c0-espejismo" }], ir: "fin" },
       { texto: "El «charco» sigue ahí, siempre un poco más lejos. Ahora sabes que no es agua… pero tus ojos lo siguen viendo igual." }
     ],
     "c0-luna": [
       { si: { noBandera: "c0-luna" }, texto: "La Luna llena asoma sobre los cerros. Se ve enorme, mucho más grande que cuando está en lo alto del cielo." },
       { si: { noBandera: "c0-luna" }, quien: "ramiro", texto: "Así sale siempre. Mi abuela decía que la Luna se acerca para mirar el salar.",
         opciones: [
-          { texto: "¿Y de verdad está más cerca?", ir: "cerca" },
-          { texto: "Es impresionante.", ir: "cerca" }
+          { texto: "Medirla con el pulgar", ir: "pulgar" },
+          { texto: "¿Y de verdad está más cerca?", ir: "cerca" }
         ] },
-      { id: "cerca", si: { noBandera: "c0-luna" }, texto: "No lo está. Si la midieras con una foto, tendría el mismo tamaño junto a los cerros que en lo alto. Es una **ilusión**: la vemos más grande cuando está junto al paisaje. Todavía se discute por qué pasa.",
+      { id: "pulgar", si: { noBandera: "c0-luna" }, texto: "Estiras el brazo y tapas la Luna con la uña del pulgar. Cabe justito, aunque se ve gigantesca." },
+      { si: { noBandera: "c0-luna" }, quien: "ramiro", texto: "Ese truco me lo enseñó un astrónomo. Hágalo de nuevo cuando la Luna esté bien arriba: también le va a caber justito." },
+      { id: "cerca", si: { noBandera: "c0-luna" }, texto: "La Luna no está más cerca ni es más grande. Medida con el pulgar o con una foto, tiene el mismo tamaño junto a los cerros que en lo alto. Es una **ilusión**: la vemos más grande cuando está junto al paisaje. Todavía se discute por qué pasa.",
         acciones: [{ poner: "c0-luna" }], ir: "fin" },
-      { texto: "La Luna sigue pareciendo enorme, aunque sabes que no ha cambiado de tamaño." }
+      { texto: "La Luna sigue pareciendo enorme, aunque tu pulgar sabe que no ha cambiado de tamaño." }
     ],
     "c0-ramiro-camino": [
       { si: { bandera: ["c0-espejismo", "c0-luna"] }, quien: "ramiro", texto: "¿Vio? El desierto es bien engañador. ¿Vamos subiendo? El observatorio está en la cima.", ir: "fin" },
@@ -311,7 +328,16 @@ DATOS.capitulos.cap0 = {
       { texto: "_Meditaciones metafísicas_. La nota de «V.» sigue ahí: «dudar de todo lo que se pueda dudar, y ver qué queda en pie»." }
     ],
     "c0-bombilla": [
-      { texto: "La bombilla parece quebrada justo donde entra al agua. La sacas: está entera. La vuelves a meter: quebrada otra vez." },
+      { texto: "Un vaso de agua con una bombilla. Se ve quebrada justo donde entra al agua.",
+        opciones: [
+          { texto: "Sacarla del agua", ir: "sacar" },
+          { texto: "Dejarla", ir: "fin" }
+        ] },
+      { id: "sacar", texto: "La sacas: está entera. Recta, sin un rasguño.",
+        opciones: [
+          { texto: "Meterla de nuevo", ir: "meter" }
+        ] },
+      { id: "meter", texto: "La vuelves a meter: quebrada otra vez, justo en la superficie. Tus dedos dicen «entera»; tus ojos insisten en «quebrada»." },
       { texto: "Tercer engaño de la noche. Y eso que la tienes aquí mismo, a un palmo de la cara.", acciones: [{ poner: "c0-bombilla" }] }
     ],
     "c0-ventana": [
@@ -438,13 +464,36 @@ DATOS.capitulos.cap0 = {
     "c0-criba": {
       tipo: "criba",
       titulo: "La criba de la duda",
-      intro: "Descartes te pide que pongas a prueba tus creencias. Vas a aplicar **tres niveles de duda**, uno tras otro. En cada nivel, decide qué creencias **resisten** ese argumento y cuáles **caen** (es decir, pueden ponerse en duda con él). Lo que cae queda fuera para siempre.",
+      intro: "Descartes va a poner a prueba lo que crees. Te atacará con **tres argumentos de duda**, del más débil al más fuerte. Con cada argumento revisaremos tus creencias **una por una** y decidirás:\n▶ **Resiste**: ese argumento no alcanza para dudar de ella.\n▶ **Cae**: ese argumento sí permite dudar de ella. Las que caen quedan fuera del duelo.\n\nLa meta: averiguar si queda **alguna** creencia en pie después de las tres dudas.",
       niveles: [
         { titulo: "Los sentidos engañan",
+          invoca: "Descartes cierra los ojos y el planetario se llena de imágenes de esta noche…",
+          recuerdos: [
+            { decor: "charco", nombre: "EL ESPEJISMO", texto: "El agua del camino. La viste clarísima, reflejando el cielo… y por más que caminaste, nunca llegaste a ella." },
+            { decor: "luna", nombre: "LA LUNA GIGANTE", texto: "Enorme junto a los cerros. Tu pulgar la tapaba igual que siempre: nunca cambió de tamaño." },
+            { decor: "vaso", nombre: "LA BOMBILLA QUEBRADA", texto: "Quebrada dentro del agua, entera fuera de ella. Y la tenías a un palmo de la cara." }
+          ],
+          pregunta: "**¿Cuáles de tus creencias resisten al argumento de que los sentidos nos engañan?**\nRevisémoslas una por una. Ojo: los engaños de esta noche fueron con cosas **lejanas** o en **condiciones especiales**.",
+          preguntaMenu: "¿Resiste al argumento de que los sentidos engañan?",
           argumento: "Esta noche tus sentidos te engañaron: el charco que no era agua, la Luna que parecía más grande, la bombilla que parecía quebrada. Es prudente no fiarse del todo de quien nos ha engañado alguna vez.\n\nPero ojo: esos engaños ocurrieron con cosas **lejanas o en condiciones especiales**. ¿Alcanza este argumento para dudar de _todo_?" },
         { titulo: "El argumento del sueño",
+          invoca: "Las imágenes cambian. Ahora es la cúpula de tu sueño…",
+          recuerdos: [
+            { decor: "reloj", nombre: "EL RELOJ FLOTANTE", texto: "Marcaba las 3:14 y flotaba en el aire. En el sueño te pareció lo más normal del mundo." },
+            { decor: "espejo", nombre: "EL PELLIZCO", texto: "Te pellizcaste frente al espejo y dolió de verdad… dentro de un sueño." },
+            { sprite: "collao", nombre: "LA DRA. COLLAO SOÑADA", texto: "«Claro que no es un sueño», te aseguró. Muy convincente, para ser parte del sueño." }
+          ],
+          pregunta: "**¿Cuáles de las creencias que quedan resisten al argumento del sueño?**\nPregúntate con cada una: si ahora mismo estuvieras soñando, ¿podría ser falsa?",
+          preguntaMenu: "¿Resiste al argumento del sueño?",
           argumento: "Esta noche soñaste que estabas en la cúpula, y todo te pareció real: el dolor del pellizco, el reloj, la voz de la Dra. Collao. No hay ninguna señal completamente segura para distinguir la vigilia del sueño.\n\nEntonces, cualquier cosa que percibes _ahora_ podría ser un sueño. ¿Qué creencias resisten, incluso si estuvieras soñando?" },
         { titulo: "El genio maligno",
+          invoca: "Las estrellas proyectadas se apagan una por una. Descartes baja la voz…",
+          recuerdos: [
+            { decor: "proyector", nombre: "EL PLANETARIO", texto: "Un cielo entero que no era el cielo. Con las luces apagadas, casi nadie nota la diferencia." },
+            { icono: "idea", nombre: "¿Y SI TODO FUERA PROYECTADO?", texto: "Imagina un proyector para tu mente entera: lo que ves, lo que tocas… y hasta lo que calculas." }
+          ],
+          pregunta: "**¿Cuál de tus creencias resiste incluso al genio maligno?**\nPregúntate con cada una: ¿podría un engañador todopoderoso hacer que esto fuera falso?",
+          preguntaMenu: "¿Resiste al genio maligno?",
           argumento: "Imagina, como en el planetario, un ser muy poderoso y engañador que pone en tu mente todo lo que crees, y que incluso te hace equivocarte cada vez que sumas o cuentas los lados de una figura.\n\n¿Queda algo que ni siquiera él pueda hacer falso?" }
       ],
       creencias: [
@@ -507,8 +556,8 @@ DATOS.capitulos.cap0 = {
       etiquetas: {
         nivel: "Nivel",
         pregunta: "¿Qué pasa con cada creencia ante este argumento?",
-        resiste: "Resiste",
-        cae: "Cae (se puede dudar)",
+        resiste: "Resiste: este argumento no basta para dudar de ella",
+        cae: "Cae: con este argumento puedo dudar de ella",
         resistio: "Resiste.",
         cayo: "Cae.",
         errorDebiaCaer: "Este argumento sí permite ponerla en duda. Vuelve a leerlo.",
