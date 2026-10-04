@@ -31,6 +31,8 @@ Duración aproximada: 10–15 minutos por capítulo.
 2. En el repositorio: **Settings → Pages → Build and deployment → Source: Deploy from a branch**, elige la rama `main` y la carpeta `/ (root)`. Guarda.
 3. En uno o dos minutos el juego estará en `https://TU-USUARIO.github.io/NOMBRE-DEL-REPOSITORIO/`.
 
+**Al publicar cambios:** en `index.html`, sube el número de versión de los archivos (`?v=2` → `?v=3`, se puede reemplazar todo de una vez). Así los navegadores descargan los archivos nuevos en vez de mezclar versiones guardadas en caché.
+
 No necesita backend ni base de datos. El progreso de cada estudiante se guarda en su propio navegador (localStorage). Si el navegador no permite guardar, el juego funciona igual, pero avisa que el progreso se perderá al cerrar.
 
 ## Cómo editar los textos (sin tocar la lógica)
