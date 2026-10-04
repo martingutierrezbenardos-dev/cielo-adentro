@@ -114,6 +114,14 @@
 
   function T() { return DATOS.config.textos; }
 
+  // Texto de los duelos: el formato normal (**negrita**, _cursiva_) más [ok]…[/ok] y
+  // [mal]…[/mal] para colorear aciertos y errores (el HTML escrito a mano se mostraría como texto).
+  function formato(t) {
+    return CA.html(t)
+      .replace(/\[(ok|mal)\]/g, '<span class="$1">')
+      .replace(/\[\/(ok|mal)\]/g, "</span>");
+  }
+
   CA.Combate = {
     TONOS: TONOS,
 
@@ -128,12 +136,12 @@
         var op = p.opciones[i];
         if (op.correcta) {
           await b.animar("rival", "golpe");
-          await b.decir('<span class="ok">**' + T().bien + "**</span> " + op.retro);
+          await b.decir("[ok]**" + T().bien + "**[/ok] " + op.retro);
           return;
         }
         usadas[i] = true;
         await b.animar("tuyo", "temblar");
-        await b.decir('<span class="mal">**' + T().noDelTodo + "**</span> " + op.retro);
+        await b.decir("[mal]**" + T().noDelTodo + "**[/mal] " + op.retro);
       }
     },
 
@@ -252,7 +260,7 @@
           flecha.addEventListener("click", function (e) { e.stopPropagation(); avanzar(); });
           elTexto.onclick = avanzar;
           esperandoA = avanzar;
-          m = CA.Dialogo.escribir(cont, CA.html(html), listo);
+          m = CA.Dialogo.escribir(cont, formato(html), listo);
           elTexto.scrollTop = 0;
         });
       }

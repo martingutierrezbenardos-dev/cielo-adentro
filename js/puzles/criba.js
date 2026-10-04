@@ -75,17 +75,17 @@
               await b.animar("tuyo", "golpe");
               await b.animar("tuyo", "caer");
               infoTuyo(cr);
-              await b.decir('<span class="ok">**' + E.cayo + "**</span> " + (cr.retro[est.nivel] || ""));
+              await b.decir("[ok]**" + E.cayo + "**[/ok] " + (cr.retro[est.nivel] || ""));
             } else {
               await b.animar("tuyo", "brillo");
-              await b.decir('<span class="ok">**' + E.resistio + "**</span> " + (cr.retro[est.nivel] || ""));
+              await b.decir("[ok]**" + E.resistio + "**[/ok] " + (cr.retro[est.nivel] || ""));
             }
             break;
           }
           ctx.guardar();
           await b.animar("tuyo", "temblar");
           var expl = cr.pistaError && cr.pistaError[est.nivel] ? cr.pistaError[est.nivel] : (cae ? E.errorDebiaCaer : E.errorDebiaResistir);
-          await b.decir('<span class="mal">**' + T().noDelTodo + "**</span> " + expl);
+          await b.decir("[mal]**" + T().noDelTodo + "**[/mal] " + expl);
         }
       }
       est.nivel++;

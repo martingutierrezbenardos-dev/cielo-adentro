@@ -73,7 +73,7 @@
             infoTuyo();
             infoRival();
             await b.animar("tuyo", "caer");
-            await b.decir('<span class="mal">**' + E.refutada + ".**</span> " + E.confianzaRefutada);
+            await b.decir("[mal]**" + E.refutada + ".**[/mal] " + E.confianzaRefutada);
             await b.decir(E.garantiaRefutada);
           }
         }
