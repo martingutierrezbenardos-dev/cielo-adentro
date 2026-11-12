@@ -38,17 +38,43 @@
   }
 
   /* ---------- Tamaño: la pantalla se escala en múltiplos enteros cuando cabe ---------- */
+  // ¿Se juega con pantalla táctil? (celular o tablet). Ajusta el diseño y los controles.
+  function esTactil() {
+    return (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) ||
+      (navigator.maxTouchPoints > 0 && window.matchMedia && !window.matchMedia("(hover: hover)").matches);
+  }
+
   function ajustarTamano() {
     if (!elMarco || !elEscenario) return;
+    var cuerpo = document.body;
+    var vw = window.innerWidth, vh = window.innerHeight;
+    var tactil = esTactil();
+    cuerpo.classList.toggle("tactil", tactil);
+    cuerpo.classList.toggle("vertical", vh >= vw);
+    cuerpo.classList.toggle("horizontal", vh < vw);
     var r = elMarco.getBoundingClientRect();
+    var cs = window.getComputedStyle(elMarco);
+    var padX = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
+    var padY = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
     var W = P.ANCHO * T, H = P.ALTO * T;
-    var dispW = Math.max(160, r.width - 12), dispH = Math.max(100, r.height - 12);
+    var dispW = Math.max(160, r.width - padX - 8), dispH = Math.max(100, r.height - padY - 8);
     var esc = Math.min(dispW / W, dispH / H);
-    if (esc >= 2) esc = Math.floor(esc);
+    // En computador se usa una escala entera (píxeles parejos); en celular se aprovecha todo el espacio.
+    if (esc >= 2 && !tactil) esc = Math.floor(esc);
     elEscenario.style.width = Math.floor(W * esc) + "px";
     elEscenario.style.height = Math.floor(H * esc) + "px";
     elEscenario.style.setProperty("--px", esc);
-    document.body.classList.toggle("compacto", esc < 2.2);
+    cuerpo.classList.toggle("compacto", esc < 2.2);
+    // Dónde termina la pantalla de juego (para poner el diálogo justo debajo en vertical).
+    var re = elEscenario.getBoundingClientRect();
+    cuerpo.style.setProperty("--debajo", Math.round(re.bottom) + "px");
+    cuerpo.style.setProperty("--ancho-juego", Math.round(re.width) + "px");
+    cuerpo.style.setProperty("--izq-juego", Math.round(re.left) + "px");
+  }
+  var pendienteAjuste = null;
+  function ajustarPronto() {
+    clearTimeout(pendienteAjuste);
+    pendienteAjuste = setTimeout(ajustarTamano, 120);
   }
 
   /* ---------- Datos del mapa ---------- */
@@ -697,21 +723,57 @@
       '<button type="button" tabindex="-1" class="b-b" data-b="1" aria-label="B (volver)">B</button>' +
       '<button type="button" tabindex="-1" class="b-a" data-a="1" aria-label="A (interactuar)">A</button>' +
       "</div>";
-    c.querySelectorAll("[data-dir]").forEach(function (b) {
-      var d = b.dataset.dir;
-      b.addEventListener("pointerdown", function (e) { e.preventDefault(); presionar(d); b.classList.add("activo"); });
-      ["pointerup", "pointerleave", "pointercancel"].forEach(function (n) {
-        b.addEventListener(n, function () { soltar(d); b.classList.remove("activo"); });
-      });
+    // Cruceta: se puede deslizar el dedo de una dirección a otra sin levantarlo.
+    var cru = c.querySelector(".cruceta");
+    var dirActual = null;
+    function dirDesde(e) {
+      var r = cru.getBoundingClientRect();
+      var dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2);
+      if (Math.sqrt(dx * dx + dy * dy) < r.width * 0.1) return dirActual;
+      return Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? "izq" : "der") : (dy < 0 ? "arriba" : "abajo");
+    }
+    function ponerDir(d) {
+      if (d === dirActual) return;
+      if (dirActual) soltar(dirActual);
+      dirActual = d;
+      if (d) {
+        presionar(d);
+        if (navigator.vibrate) { try { navigator.vibrate(6); } catch (err) { /* sin vibración */ } }
+      }
+      cru.querySelectorAll("[data-dir]").forEach(function (b) { b.classList.toggle("activo", b.dataset.dir === d); });
+    }
+    cru.addEventListener("pointerdown", function (e) {
+      e.preventDefault();
+      try { cru.setPointerCapture(e.pointerId); } catch (err) { /* sin captura */ }
+      ponerDir(dirDesde(e));
     });
-    c.querySelector("[data-a]").addEventListener("click", function () {
+    cru.addEventListener("pointermove", function (e) { if (dirActual) ponerDir(dirDesde(e)); });
+    ["pointerup", "pointercancel", "lostpointercapture"].forEach(function (n) {
+      cru.addEventListener(n, function () { ponerDir(null); });
+    });
+
+    // A y B responden al tocar (sin esperar a que se levante el dedo).
+    function boton(sel, fn) {
+      var b = c.querySelector(sel);
+      b.addEventListener("pointerdown", function (e) {
+        e.preventDefault();
+        b.classList.add("activo");
+        fn();
+      });
+      ["pointerup", "pointercancel", "pointerleave"].forEach(function (n) {
+        b.addEventListener(n, function () { b.classList.remove("activo"); });
+      });
+    }
+    boton("[data-a]", function () {
       if (CA.Dialogo.abierto()) CA.Dialogo.botonA();
       else pedidoInteraccion = true;
     });
-    c.querySelector("[data-b]").addEventListener("click", function () {
+    boton("[data-b]", function () {
       if (CA.Dialogo.abierto()) CA.Dialogo.botonA();
       else if (CA.UI.modalSuperior() && CA.UI.modalSuperior().cerrable) CA.UI.modalSuperior().cerrar();
     });
+    // Sin menú contextual al mantener presionado.
+    c.addEventListener("contextmenu", function (e) { e.preventDefault(); });
   }
 
   /* ---------- Lista accesible de zonas (Tab) y etiquetas visibles (R) ---------- */
@@ -755,7 +817,9 @@
       lienzo.height = P.ALTO * T * 2;
       ctx = lienzo.getContext("2d");
       ctx.imageSmoothingEnabled = false;
-      window.addEventListener("resize", ajustarTamano);
+      window.addEventListener("resize", ajustarPronto);
+      window.addEventListener("orientationchange", ajustarPronto);
+      if (window.visualViewport) window.visualViewport.addEventListener("resize", ajustarPronto);
       document.addEventListener("keydown", teclaAbajo);
       document.addEventListener("keyup", teclaArriba);
       window.addEventListener("blur", soltarTodo);

@@ -371,6 +371,35 @@
       document.getElementById("btn-glosario").addEventListener("click", function () { abrirCuaderno("glosario"); });
       document.getElementById("btn-resaltar").addEventListener("click", function () { CA.Escena.alternarResaltado(); });
       document.getElementById("btn-mochila").addEventListener("click", function () { CA.Inventario.abrir(); });
+
+      // Pantalla completa (si el navegador la permite; en iPhone se usa «Agregar a inicio»).
+      var bp = document.getElementById("btn-pantalla");
+      var raiz = document.documentElement;
+      var pedir = raiz.requestFullscreen || raiz.webkitRequestFullscreen;
+      if (bp && pedir && (document.fullscreenEnabled || document.webkitFullscreenEnabled)) {
+        bp.hidden = false;
+        bp.addEventListener("click", function () {
+          var activa = document.fullscreenElement || document.webkitFullscreenElement;
+          if (activa) (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+          else {
+            var pr = pedir.call(raiz);
+            if (pr && pr.then) pr.then(function () {
+              // En celular, mejor horizontal; si no se puede, no pasa nada.
+              try { if (screen.orientation && screen.orientation.lock) screen.orientation.lock("landscape").catch(function () {}); } catch (e) { /* sin bloqueo */ }
+            }).catch(function () {});
+          }
+        });
+        ["fullscreenchange", "webkitfullscreenchange"].forEach(function (n) {
+          document.addEventListener(n, function () {
+            bp.setAttribute("aria-pressed", (document.fullscreenElement || document.webkitFullscreenElement) ? "true" : "false");
+            setTimeout(CA.Escena.ajustarTamano, 150);
+          });
+        });
+      }
+
+      // En pantallas chicas el objetivo se muestra en una línea; al tocarlo se ve completo.
+      var obj = document.getElementById("barra-objetivo");
+      if (obj) obj.addEventListener("click", function () { obj.classList.toggle("abierto"); setTimeout(CA.Escena.ajustarTamano, 50); });
       document.getElementById("btn-ajustes").addEventListener("click", abrirAjustes);
       document.getElementById("btn-menu").addEventListener("click", abrirMenu);
       document.addEventListener("keydown", teclado);

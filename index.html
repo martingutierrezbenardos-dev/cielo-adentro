@@ -2,7 +2,15 @@
 <html lang="es-CL">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#2a1f52">
+  <!-- Se puede «Agregar a la pantalla de inicio» del celular y abrir como app, a pantalla completa -->
+  <link rel="manifest" href="manifest.webmanifest?v=5">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Cielo Adentro">
+  <link rel="apple-touch-icon" href="iconos/icono-180.png">
   <meta name="description" content="Aventura educativa de filosofía de la ciencia para 3° y 4° medio, al estilo de los RPG de Game Boy.">
   <title>Cielo Adentro</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0f2c'/%3E%3Cpath d='M4 26 A12 12 0 0 1 28 26Z' fill='%23d9d4e4'/%3E%3Ccircle cx='23' cy='8' r='2.5' fill='%23f2b84b'/%3E%3C/svg%3E">
@@ -10,7 +18,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
-  <link rel="stylesheet" href="css/estilos.css?v=4">
+  <link rel="stylesheet" href="css/estilos.css?v=5">
 </head>
 <body>
   <div id="app">
@@ -24,6 +32,7 @@
         <button type="button" class="boton" id="btn-cuaderno"><span aria-hidden="true">📓</span><span class="etq">Cuaderno</span> <span class="tecla" aria-hidden="true">C</span></button>
         <button type="button" class="boton" id="btn-glosario"><span aria-hidden="true">🔤</span><span class="etq">Glosario</span> <span class="tecla" aria-hidden="true">G</span></button>
         <button type="button" class="boton" id="btn-resaltar" aria-pressed="false"><span aria-hidden="true">❗</span><span class="etq">Mostrar lugares</span> <span class="tecla" aria-hidden="true">R</span></button>
+        <button type="button" class="boton" id="btn-pantalla" aria-label="Pantalla completa" hidden><span aria-hidden="true">⛶</span><span class="etq">Pantalla completa</span></button>
         <button type="button" class="boton" id="btn-ajustes" aria-label="Ajustes"><span aria-hidden="true">⚙️</span><span class="etq">Ajustes</span></button>
         <button type="button" class="boton" id="btn-menu"><span aria-hidden="true">☰</span><span class="etq">Menú</span> <span class="tecla" aria-hidden="true">M</span></button>
       </nav>
@@ -66,38 +75,38 @@
   <noscript><p style="padding:2rem">Este juego necesita JavaScript activado.</p></noscript>
 
   <!-- Datos editables (ver README) -->
-  <script src="datos/config.js?v=4"></script>
-  <script src="datos/cap0.js?v=4"></script>
-  <script src="datos/cap1.js?v=4"></script>
-  <script src="datos/cuaderno.js?v=4"></script>
-  <script src="datos/glosario.js?v=4"></script>
-  <script src="datos/evaluacion.js?v=4"></script>
-  <script src="datos/docente.js?v=4"></script>
+  <script src="datos/config.js?v=5"></script>
+  <script src="datos/cap0.js?v=5"></script>
+  <script src="datos/cap1.js?v=5"></script>
+  <script src="datos/cuaderno.js?v=5"></script>
+  <script src="datos/glosario.js?v=5"></script>
+  <script src="datos/evaluacion.js?v=5"></script>
+  <script src="datos/docente.js?v=5"></script>
 
   <!-- Pixel art (estilo Game Boy Color) -->
-  <script src="js/pixel/base.js?v=4"></script>
-  <script src="js/pixel/sprites.js?v=4"></script>
-  <script src="js/pixel/tiles.js?v=4"></script>
+  <script src="js/pixel/base.js?v=5"></script>
+  <script src="js/pixel/sprites.js?v=5"></script>
+  <script src="js/pixel/tiles.js?v=5"></script>
 
   <!-- Motor -->
-  <script src="js/motor/estado.js?v=4"></script>
-  <script src="js/motor/guardado.js?v=4"></script>
-  <script src="js/motor/condiciones.js?v=4"></script>
-  <script src="js/motor/escena.js?v=4"></script>
-  <script src="js/motor/dialogo.js?v=4"></script>
-  <script src="js/motor/inventario.js?v=4"></script>
-  <script src="js/motor/ui.js?v=4"></script>
-  <script src="js/motor/puzles.js?v=4"></script>
-  <script src="js/motor/evaluacion.js?v=4"></script>
-  <script src="js/motor/exportar.js?v=4"></script>
-  <script src="js/motor/docente.js?v=4"></script>
-  <script src="js/motor/combate.js?v=4"></script>
+  <script src="js/motor/estado.js?v=5"></script>
+  <script src="js/motor/guardado.js?v=5"></script>
+  <script src="js/motor/condiciones.js?v=5"></script>
+  <script src="js/motor/escena.js?v=5"></script>
+  <script src="js/motor/dialogo.js?v=5"></script>
+  <script src="js/motor/inventario.js?v=5"></script>
+  <script src="js/motor/ui.js?v=5"></script>
+  <script src="js/motor/puzles.js?v=5"></script>
+  <script src="js/motor/evaluacion.js?v=5"></script>
+  <script src="js/motor/exportar.js?v=5"></script>
+  <script src="js/motor/docente.js?v=5"></script>
+  <script src="js/motor/combate.js?v=5"></script>
 
   <!-- Puzles -->
-  <script src="js/puzles/criba.js?v=4"></script>
-  <script src="js/puzles/clasificar.js?v=4"></script>
-  <script src="js/puzles/balanza.js?v=4"></script>
+  <script src="js/puzles/criba.js?v=5"></script>
+  <script src="js/puzles/clasificar.js?v=5"></script>
+  <script src="js/puzles/balanza.js?v=5"></script>
 
-  <script src="js/juego.js?v=4"></script>
+  <script src="js/juego.js?v=5"></script>
 </body>
 </html>
