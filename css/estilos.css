@@ -774,3 +774,137 @@ body.sin-animaciones #lugar.ver { opacity: 0; }
 @media (orientation: portrait) {
   #escenario-marco { align-items: flex-start; }
 }
+
+/* =========================================================
+   Celulares y tablets (body.tactil lo pone js/motor/escena.js)
+   ========================================================= */
+#app { height: 100vh; height: 100dvh; }
+html, body { overscroll-behavior: none; }
+body { -webkit-tap-highlight-color: transparent; }
+#pantalla, .controles, .combate-escena { touch-action: manipulation; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+.controles { touch-action: none; }
+
+body.tactil .controles { display: flex; }
+body.tactil .cruceta button, body.tactil .botones-ab button { pointer-events: none; }
+body.tactil .botones-ab button[data-a], body.tactil .botones-ab button[data-b] { pointer-events: auto; }
+.cruceta { touch-action: none; cursor: pointer; }
+.botones-ab button.activo { filter: brightness(1.25); transform: scale(.94); }
+
+/* Barra superior compacta: una sola fila, objetivo en una línea (tocar para verlo completo) */
+body.tactil .barra {
+  flex-wrap: nowrap;
+  padding: .25rem .4rem;
+  padding-top: max(.25rem, env(safe-area-inset-top));
+  padding-left: max(.4rem, env(safe-area-inset-left));
+  padding-right: max(.4rem, env(safe-area-inset-right));
+  gap: .4rem;
+}
+body.tactil #barra-capitulo { display: none; }
+body.tactil .barra-info { flex: 1; min-width: 0; }
+body.tactil #barra-objetivo {
+  font-size: .82rem;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+body.tactil #barra-objetivo.abierto { white-space: normal; }
+body.tactil .barra-botones { flex-wrap: nowrap; gap: .25rem; flex-shrink: 0; }
+body.tactil .barra .boton { min-height: 36px; min-width: 36px; padding: .2rem .35rem; font-size: .95rem; box-shadow: 2px 2px 0 var(--ui-borde); }
+body.tactil .barra .boton .etq, body.tactil .barra .boton .tecla { display: none; }
+body.tactil #escenario-marco { padding: .3rem; }
+
+/* --- Vertical: pantalla arriba a todo el ancho, diálogo justo debajo, controles abajo --- */
+body.tactil.vertical #escenario-marco { flex: 0 1 auto; align-items: flex-start; }
+body.tactil.vertical .controles {
+  flex: 1;
+  align-items: center;
+  padding: .5rem 1.4rem;
+  padding-bottom: max(.8rem, env(safe-area-inset-bottom));
+  min-height: 11rem;
+}
+body.tactil.vertical .cruceta { grid-template-columns: repeat(3, 3.6rem); grid-template-rows: repeat(3, 3.6rem); }
+body.tactil.vertical .botones-ab button { width: 4.3rem; height: 4.3rem; font-size: 1.1rem; }
+body.tactil.vertical.compacto .dialogo,
+body.tactil.vertical .dialogo {
+  position: fixed;
+  top: calc(var(--debajo, 50vh) + .4rem);
+  bottom: auto;
+  left: .4rem; right: .4rem;
+  max-height: calc(100dvh - var(--debajo, 50vh) - .8rem - env(safe-area-inset-bottom));
+  font-size: calc(1.02rem * var(--escala));
+}
+body.tactil.vertical .dialogo-caja { min-height: 7em; }
+
+/* --- Horizontal: controles a los lados de la pantalla, como una consola portátil --- */
+body.tactil.horizontal #escenario-marco {
+  padding-left: calc(9.5rem + env(safe-area-inset-left));
+  padding-right: calc(9.5rem + env(safe-area-inset-right));
+  padding-bottom: max(.3rem, env(safe-area-inset-bottom));
+}
+body.tactil.horizontal .controles {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  padding: 0 max(.8rem, env(safe-area-inset-left)) max(1rem, env(safe-area-inset-bottom));
+  padding-right: max(.8rem, env(safe-area-inset-right));
+  pointer-events: none;
+  z-index: 5;
+}
+body.tactil.horizontal .controles > * { pointer-events: auto; }
+body.tactil.horizontal .cruceta { grid-template-columns: repeat(3, 2.9rem); grid-template-rows: repeat(3, 2.9rem); }
+body.tactil.horizontal .botones-ab button { width: 3.6rem; height: 3.6rem; }
+body.tactil.horizontal .botones-ab { margin-right: .2rem; }
+body.tactil.horizontal.compacto .dialogo,
+body.tactil.horizontal .dialogo {
+  position: fixed;
+  left: var(--izq-juego, 9.5rem);
+  right: auto;
+  width: var(--ancho-juego, 60vw);
+  bottom: max(.3rem, env(safe-area-inset-bottom));
+  max-height: 62dvh;
+  font-size: calc(.95rem * var(--escala));
+}
+body.tactil.horizontal .dialogo-retrato { width: 2.6em; height: 2.6em; }
+
+
+/* Ventanas (cuaderno, menú, evaluación…) a pantalla completa en celular */
+body.tactil .modal-fondo { padding: 0; align-items: stretch; }
+body.tactil .modal, body.tactil .modal.ancho {
+  width: 100%;
+  max-height: 100dvh;
+  height: 100dvh;
+  border-radius: 0;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+body.tactil .modal-cabecera { border-radius: 0; padding: .45rem .7rem; }
+body.tactil .modal-cabecera h2 { font-size: .7rem; }
+body.tactil .modal-cuerpo { padding: .8rem .9rem 1.2rem; -webkit-overflow-scrolling: touch; }
+
+/* Duelos en celular */
+body.tactil .modal.modal-combate { height: 100dvh; padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+body.tactil .modal-combate .modal-cabecera { padding: .25rem .4rem; }
+body.tactil .modal-combate .modal-cabecera .boton { min-height: 36px; font-size: .85rem; padding: .2rem .5rem; }
+body.tactil .modal-combate .modal-cuerpo { display: flex; flex-direction: column; min-height: 0; padding: 0 .3rem .3rem; }
+body.tactil .combate { gap: .35rem; flex: 1; min-height: 0; }
+body.tactil .combate-info { font-size: clamp(9px, 2.6vw, 14px); padding: .2rem .4rem .3rem; }
+body.tactil .combate-texto { min-height: 4.5rem; padding: .6rem .8rem .9rem; font-size: .98rem; }
+body.tactil .combate-menu .opcion-gb { font-size: .98rem; padding: .45em .5em; }
+body.tactil.vertical .combate-abajo.con-menu { grid-template-columns: 1fr; }
+body.tactil.vertical .combate-texto, body.tactil.vertical .combate-menu { max-height: none; }
+body.tactil.horizontal .combate { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); align-items: stretch; }
+body.tactil.horizontal .combate-escena { max-height: none; height: auto; align-self: start; }
+body.tactil.horizontal .combate-abajo,
+body.tactil.horizontal .combate-abajo.con-menu { grid-template-columns: 1fr; overflow-y: auto; align-content: start; }
+body.tactil.horizontal .combate-texto, body.tactil.horizontal .combate-menu { max-height: none; }
+body.tactil.horizontal .modal-combate .pistas { max-height: 30dvh; overflow-y: auto; }
+
+/* Pantalla de inicio en celular */
+body.tactil .inicio-panel { margin-top: max(1rem, env(safe-area-inset-top)); padding: 1rem 1.1rem; }
+body.tactil.horizontal .inicio-panel { width: min(40rem, calc(100% - 2rem)); }
+body.tactil .avisos { top: auto; bottom: calc(env(safe-area-inset-bottom) + 1rem); left: 50%; right: auto; transform: translateX(-50%); width: min(24rem, calc(100vw - 2rem)); }
+body.tactil.horizontal .combate-info { font-size: clamp(8px, 1.25vw, 12px); max-width: 44%; min-width: 34%; }
+body.tactil .combate-info .detalle { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+body.tactil.horizontal .combate-menu .desc-mov { display: none; }
+body.tactil.horizontal .combate-abajo { min-height: 0; max-height: 100%; }

@@ -23,6 +23,8 @@ Duración aproximada: 10–15 minutos por capítulo.
 
 **Opción 1 — Directo:** haz doble clic en `index.html`. Funciona sin internet y sin instalar nada (Chrome, Edge, Firefox o Safari recientes).
 
+**En celular o tablet:** se juega en el navegador con una cruceta (se puede deslizar el dedo) y botones A/B en pantalla. En horizontal los controles quedan a los lados de la pantalla, como en una consola portátil; en vertical, abajo. Para jugar a pantalla completa, usa el botón ⛶ (Android) o, en iPhone, **Compartir → Agregar a inicio**: el juego se abre como una app.
+
 **Opción 2 — Servidor local (opcional):** si tienes Node.js, ejecuta `node tests/servidor.js` y abre `http://localhost:8765`.
 
 ## Cómo publicarlo en GitHub Pages
